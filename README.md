@@ -1,2 +1,1 @@
-gann
-====
+Here are the works about gann's (William Delbert Gann) analysis methods. I put all my simulations/tools/results on this repository.
