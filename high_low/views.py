@@ -1,11 +1,16 @@
 ###
+### python libraries
+###
+import json
+
+
+###
 ### django libraries
 ###
 from django.core import serializers as SRL
 from django.db.models.query import QuerySet
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-import json
 
 
 ###
