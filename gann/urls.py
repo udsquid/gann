@@ -14,11 +14,6 @@ urlpatterns = patterns('',
 
     # Uncomment the next line to enable the admin:
     url(r'^admin/', include(admin.site.urls)),
-)
 
-urlpatterns += patterns('high_low.views',
-    url(r'^high_low/point/list/$', 'list_points'),
-    url(r'^high_low/point/len/$', 'get_length'),
-    url(r'^high_low/point/add/$', 'add_point'),
-    url(r'^high_low/point/filter/$', 'filter_point'),
+    url(r'^high_low/', include('high_low.urls')),
 )
