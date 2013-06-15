@@ -21,70 +21,63 @@ from high_low.models import Point
 ### Point test cases
 ###
 class PointViewTests(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        build_db()
+
+
     def test_get_partial(self):
-        self.add_point('1990-02-12', 12682)
-        self.add_point('1990-02-17', 11550)
-        self.add_point('1990-02-21', 12321)
-        self.add_point('1990-02-27', 10995)
-        self.add_point('1990-03-01', 11720)
-        data = self._json_get('/high_low/point/list/?id=2&count=3')
+        data = json_get('/high_low/point/list/?id=2&count=3')
         self.assertEqual(len(data), 3)
 
 
     def test_get_length(self):
-        self.add_point('1990-02-12', 12682)
-        self.add_point('1990-02-17', 11550)
-        self.add_point('1990-02-21', 12321)
-        self.add_point('1990-02-27', 10995)
-        self.add_point('1990-03-01', 11720)
-        data = self._json_get('/high_low/point/len/')
-        self.assertEqual(data, 5)
-
-
-    def test_add_point(self):
-        self.add_point('1995-09-30', 4986)
-        self.add_point('1995-10-09', 5265)
-        self.add_point('1995-11-18', 4530)
-        data = self._json_get('/high_low/point/list/')
-        self.assertEqual(data[0]['fields']['time'], '1995-09-30')
-        self.assertEqual(data[0]['fields']['price'], 4986)
-        self.assertEqual(data[1]['fields']['time'], '1995-10-09')
-        self.assertEqual(data[1]['fields']['price'], 5265)
-        self.assertEqual(data[2]['fields']['time'], '1995-11-18')
-        self.assertEqual(data[2]['fields']['price'], 4530)
+        data = json_get('/high_low/point/len/')
+        self.assertEqual(data, 487)
 
 
     def test_filter_points(self):
-        data = self._json_get('/high_low/point/filter/?amplitude=2700')
-        self.assertEqual(data[0]['fields']['price'], 12682)
-        self.assertEqual(data[1]['fields']['price'], 2485)
-        self.assertEqual(data[2]['fields']['price'], 6365)
-        self.assertEqual(data[3]['fields']['price'], 3098)
-        self.assertEqual(data[4]['fields']['price'], 7228)
-        self.assertEqual(data[5]['fields']['price'], 4474)
-        self.assertEqual(data[6]['fields']['price'], 10256)
-        self.assertEqual(data[7]['fields']['price'], 5422)
-        self.assertEqual(data[8]['fields']['price'], 10393)
-        self.assertEqual(data[9]['fields']['price'], 3411)
+        build_db()
+        data = json_get('/high_low/point/filter/?amplitude=2700')
+        pts = [d['price'] for d in data]
+        expected = [12682, 2485, 6365, 3098, 7228, 4474, 10256, 5422, 10393, 3411, 9859]
+        self.assertEqual(pts, expected)
 
 
-    def add_point(self, time, price):
-        uri = '/high_low/point/add/?time=%s&price=%d' % (time, price)
-        self._json_post(uri)
+###
+### helper functions
+###
+def json_get(uri):
+    client = Client()
+    resp = client.get(uri)
+    content = json.loads(resp.content)
+    return content['data']
 
 
-    def _json_get(self, uri):
-        client = Client()
-        resp = client.get(uri)
-        self.assertEqual(resp.status_code, 200)
-        content = json.loads(resp.content)
-        self.assertEqual(content['success'], True)
-        return content['data']
+def json_post(uri):
+    client = Client()
+    resp = client.post(uri)
+    content = json.loads(resp.content)
 
 
-    def _json_post(self, uri):
-        client = Client()
-        resp = client.post(uri)
-        self.assertEqual(resp.status_code, 200)
-        content = json.loads(resp.content)
-        self.assertEqual(content['success'], True)
+def add_point(time, price):
+    uri = '/high_low/point/add/?time=%s&price=%s' % (time, price)
+    json_post(uri)
+
+
+def do_read(source):
+    records = list()
+    with open(source) as f:
+        lines = f.readlines()
+        for l in lines:
+            time, price = l.replace(',', '').strip().split()
+            records.append((time, price))
+    return records
+
+
+def build_db():
+    records = do_read('data/taiex_high_low.txt')
+    for time, price in records:
+        t = time.replace('/', '-')
+        p = int(price)
+        add_point(t, p)

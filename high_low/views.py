@@ -16,6 +16,7 @@ from django.views.decorators.csrf import csrf_exempt
 ###
 ### project libraries
 ###
+from point_filter import *
 import high_low.models as MD
 
 
@@ -49,16 +50,17 @@ def add_point(request, **kwargs):
     return return_result(dict(id=p.pk))
 
 
-def filter_point(request, **kwargs):
-    amp = request.REQUEST.get('amplitude', 180)
+def filter_points(request, **kwargs):
+    amp = request.REQUEST.get('amplitude', 450)
     pt_qs = MD.Point.objects.all()
-    # greater_than(amp)
-    return return_result(pt_qs)
+    result = _filter_points(list(pt_qs), float(amp))
+    return return_result(result)
 
 
 ###
 ### helper functions
 ###
+# --- http/json ---
 def return_result(data):
     if isinstance(data, QuerySet):
         final_data = to_json(data)
@@ -78,3 +80,15 @@ def return_already_exists():
 def to_json(data):
     json_data = SRL.serialize('json', data)
     return json.loads(json_data)
+
+
+# --- models ---
+def _filter_points(pt_list, amp):
+    """Forward points one by one to check the amplitude,
+    save peak/trough when amplitude is greater than given value.
+    """
+    init(amp)
+    for p in pt_list:
+        forward2(p)
+    cleanup2()
+    return get_result()
