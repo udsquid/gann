@@ -37,5 +37,9 @@ def post_to_repo(records):
 if __name__ == '__main__':
     import os.path
     full_path = os.path.abspath("data/taiex_high_low.txt")
+    print "Reading data.. ",
     records = do_read(full_path)
+    print "done!"
+    print "Posting into repository.. "
     post_to_repo(records)
+    print "done!"
