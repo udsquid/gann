@@ -19,12 +19,12 @@ def list_points(request, **kwargs):
     start = request.REQUEST.get('id', 1)
     count = request.REQUEST.get('count', 10)
     pt_qs = MD.Point.objects.filter(id__gte=start)
-    return JR.return_result(pt_qs[:count])
+    return JR.return_success(pt_qs[:count])
 
 
 def get_length(request, **kwargs):
     pt_qs = MD.Point.objects.all()
-    return JR.return_result(pt_qs.count())
+    return JR.return_success(pt_qs.count())
 
 
 @csrf_exempt
@@ -34,19 +34,19 @@ def add_point(request, **kwargs):
     t = MD.Point.objects.filter(time=req['time'],
                                 price=req['price'])
     if t.exists():
-        return return_already_exists()
+        return JR.return_already_exists()
     # add a new point
     p = MD.Point(time = req['time'],
                  price = req['price'])
     p.save()
-    return JR.return_result(dict(id=p.pk))
+    return JR.return_success(dict(id=p.pk))
 
 
 def filter_points(request, **kwargs):
     amp = request.REQUEST.get('amplitude', 450)
     pt_qs = MD.Point.objects.all()
     result = _filter_points(list(pt_qs), float(amp))
-    return JR.return_result(result)
+    return JR.return_success(result)
 
 
 # --- models ---
