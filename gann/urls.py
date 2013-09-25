@@ -16,4 +16,5 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
 
     url(r'^high_low/', include('high_low.urls')),
+    url(r'^history/', include('history.urls')),
 )
