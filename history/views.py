@@ -23,35 +23,34 @@ def history_do(request, category, action, **kwargs):
         pass
     # invoke worker's action
     func = _iworker[category][action]
-    result = func(**kwargs)
-    return JR.return_result(result)
+    return func(**kwargs)
 
 
 # --- TAIEX actions ---
 def list_taiex(**kwargs):
-    return 'list_taiex'
+    return JR.return_success('list_taiex')
 
 
 def len_taiex(**kwargs):
-    return 'len_taiex'
+    return JR.return_success('len_taiex')
 
 
 @csrf_exempt
 def add_taiex(**kwargs):
-    return 'add_taiex'
+    return JR.return_success('add_taiex')
 
 
 def list_tx(**kwargs):
-    return 'list_tx'
+    return JR.return_success('list_tx')
 
 
 def len_tx(**kwargs):
-    return 'len_tx'
+    return JR.return_success('len_tx')
 
 
 @csrf_exempt
 def add_tx(**kwargs):
-    return 'add_tx'
+    return JR.return_success('add_tx')
 
 
 ###
