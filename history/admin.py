@@ -14,11 +14,15 @@ from history.models import Taiex
 ### admin hook
 ###
 # --- Taiex ---
-def format_date(point):
-    return point.time.strftime("%Y-%m-%d %H:%M:%s")
-format_date.short_description = "Time"
+def format_datetime(point):
+    from pytz import timezone
+    local = point.time.astimezone(timezone("Asia/Taipei"))
+    return local.strftime("%Y-%m-%d %H:%M:%S")
+format_datetime.short_description = "Time"
 
 class TaiexAdmin(admin.ModelAdmin):
-    list_display = (format_date, 'price')
+    list_display = (format_datetime, 'price')
+    date_hierarchy = 'time'
+    ordering = ('time',)
 
 admin.site.register(Taiex, TaiexAdmin)

@@ -17,12 +17,19 @@ Options:
 ###
 ### python libraries
 ###
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from docopt import docopt
 from pyquery import PyQuery
 from urllib import urlencode
+import pytz
 import re
 import requests
+
+
+###
+### django libraries
+###
+from django.utils.dateparse import parse_datetime
 
 
 ###
@@ -86,16 +93,12 @@ def save(data, day):
         return
     for time, index in data.iteritems():
         rec = MD.Taiex()
-        rec.time = '%s %s' % (day, time)
+        naive = parse_datetime("%s %s" % (day, time))
+        rec.time = pytz.timezone('Asia/Taipei').localize(naive)
         rec.price = index
-        if time == '09:00':
-            print rec.time
-            print rec.price
+        rec.save()
 
 
-###
-### main procedure
-###
 def fetch_old(start, end):
     # setup date boundaries
     LOWER = date(2000, 1, 4)
@@ -111,6 +114,9 @@ def fetch_old(start, end):
         save(data, day)
 
 
+###
+### main procedure
+###
 def fetch(start, end):
     """Fetch TAIEX data.
 
