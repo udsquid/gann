@@ -4,8 +4,8 @@
 
 Usage:
     fetch_taiex.py [--start=<start>] [--end=<end>]
-    fetch_taiex.py (-h | --help)
-    fetch_taiex.py (-v | --version)
+    fetch_taiex.py -h | --help
+    fetch_taiex.py -v | --version
 
 Options:
     -h, --help         Show this screen.
