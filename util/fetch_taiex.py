@@ -69,13 +69,17 @@ def convert_date(d):
     return '%d/%#02d/%#02d' % (d.year-1911, d.month, d.day)
 
 
-def fetch_single1(date):
+def decode_page(content):
+    return content.encode('raw_unicode_escape').decode('big5')
+
+
+def fetch_single1(day):
     # fetch
     url = 'http://www.twse.com.tw/ch/trading/exchange/MI_5MINS_INDEX/MI_5MINS_INDEX_oldtsec.php'
-    param = dict(input_date = convert_date(date))
+    param = dict(input_date = convert_date(day))
     resp = requests.post(url, param)
     # parse
-    data = PyQuery(resp.text.encode('raw_unicode_escape').decode('big5'))
+    data = PyQuery(decode_page(resp.text))
     if u'查無資料' in data('body').text():
         # no data today
         return None
@@ -83,6 +87,24 @@ def fetch_single1(date):
     _indexes = _times.next('td')
     times = _times.text().split()
     indexes = [i.replace(',', '') for i in _indexes.text().split()]
+    assert len(times) == len(indexes), \
+        "number of times and indexes are not match"
+    return dict(zip(times, indexes))
+
+
+def fetch_single2(day):
+    # fetch
+    url = 'http://www.twse.com.tw/ch/trading/exchange/MI_5MINS_INDEX/genpage/Report{year}{month:02d}/A121{year}{month:02d}{day:02d}.php?chk_date={taiex_date}'.format(year=day.year, month=day.month, day=day.day, taiex_date=convert_date(day))
+    resp = requests.get(url)
+    # parse
+    data = PyQuery(decode_page(resp.text))
+    if u'查無資料' in data('body').text():
+        # no data today
+        return None
+    _times = data('tr.basic2 > td:first-child')
+    _indexes = _times.next('td')
+    times = [t.text for t in _times[1:]]
+    indexes = [i.text.replace(',', '') for i in _indexes[1:]]
     assert len(times) == len(indexes), \
         "number of times and indexes are not match"
     return dict(zip(times, indexes))
@@ -114,6 +136,21 @@ def fetch_old(start, end):
         save(data, day)
 
 
+def fetch_new_1min(start, end):
+    # setup date boundaries
+    LOWER = date(2004, 10, 15)
+    UPPER = date(2011, 1, 15)
+    if start > UPPER or end < LOWER:
+        return
+    start = max(start, LOWER)
+    end = min(end, UPPER)
+    # start fetching daily data
+    for day in days_range(start, end):
+        print "Fetching %s.." % day
+        data = fetch_single2(day)
+        save(data, day)
+
+
 ###
 ### main procedure
 ###
@@ -127,7 +164,7 @@ def fetch(start, end):
     """
     print "Fetching TAIEX from [%s] to [%s].. " % (start, end)
     fetch_old(start, end)
-    # fetch_new_1min(start, end)
+    fetch_new_1min(start, end)
     print "done!"
 
 
