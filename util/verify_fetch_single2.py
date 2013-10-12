@@ -22,12 +22,6 @@ from fetch_taiex import *
 
 
 ###
-### contants
-###
-ERROR_INVALID_ARGUMENT = 1
-
-
-###
 ### helper functions
 ###
 def setup_date_boundaries(start, end):
@@ -51,11 +45,12 @@ def _fetch_one(day):
 ###
 def verify_html(start, end):
     """Verify the HTML structures day by day are keep the same."""
-    print "Verifying.. "
     flag = start.replace(year=start.year-1, month=1, day=1)
     for day in days_range(start, end):
         if flag.year != day.year:
-            print day.year
+            print "[%s] Verifying HTML in %d.." % \
+                (datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                 day.year)
             flag = day
         data = _fetch_one(day)
         if u'查無資料' in data('body').text():
@@ -69,7 +64,13 @@ def verify_html(start, end):
 def count_days(start, end):
     total = (end - start).days + 1
     trade = holiday = 0
+    flag = start.replace(year=start.year-1, month=1, day=1)
     for day in days_range(start, end):
+        if flag.year != day.year:
+            print "[%s] Counting days in %d.." % \
+                (datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                 day.year)
+            flag = day
         data = _fetch_one(day)
         if u'查無資料' in data('body').text():
             holiday += 1
