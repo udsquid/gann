@@ -29,17 +29,18 @@ from fetch_taiex import *
 ### variables
 ###
 test_result = dict( # p: pass; f:fail; n: not run; s: skip
-    old = dict(regular = 'n', holiday = 'n'),
-    new_1min = dict(regular = 'n', holiday = 'n'),
+    phase1 = dict(regular = 'n', holiday = 'n'),
+    phase2 = dict(regular = 'n', holiday = 'n'),
+    phase3 = dict(regular = 'n', holiday = 'n'),
 )
 
 
 ###
 ### unit test functions
 ###
-def test_fetch_old_regular():
+def test_fetch_phase1_regular():
     try:
-        print "\tFetching indexes in regular day.."
+        print "\tTesting data in regular day.."
         result = fetch_single1(date(2000, 1, 4))
         check_list = [
             ('09:00', '8448.84'),
@@ -54,9 +55,9 @@ def test_fetch_old_regular():
         return 'f'
 
 
-def test_fetch_old_holiday():
+def test_fetch_phase1_holiday():
     try:
-        print "\tFetching indexes in holiday.."
+        print "\tTesting data in holiday.."
         result = fetch_single1(date(2000, 1, 8))
         assert not result, "indexes in '2000-01-08' should be empty"
         return 'p'
@@ -65,14 +66,14 @@ def test_fetch_old_holiday():
         return 'f'
 
 
-def test_fetch_old():
-    test_result['old']['regular'] = test_fetch_old_regular()
-    test_result['old']['holiday'] = test_fetch_old_holiday()
+def test_fetch_phase1():
+    test_result['phase1']['regular'] = test_fetch_phase1_regular()
+    test_result['phase1']['holiday'] = test_fetch_phase1_holiday()
 
 
-def test_fetch_new_1min_regular():
+def test_fetch_phase2_regular():
     try:
-        print "\tFetching indexes in regular day.."
+        print "\tTesting data in regular day.."
         result = fetch_single2(date(2004, 10, 15))
         check_list = [
             ('9:00', '5831.07'),
@@ -87,9 +88,9 @@ def test_fetch_new_1min_regular():
         return 'f'
 
 
-def test_fetch_new_1min_holiday():
+def test_fetch_phase2_holiday():
     try:
-        print "\tFetching indexes in holiday.."
+        print "\tTesting data in holiday.."
         result = fetch_single2(date(2004, 10, 16))
         assert not result, "indexes in '2000-01-08' should be empty"
         return 'p'
@@ -98,14 +99,14 @@ def test_fetch_new_1min_holiday():
         return 'f'
 
 
-def test_fetch_new_1min():
-    test_result['new_1min']['regular'] = test_fetch_new_1min_regular()
-    test_result['new_1min']['holiday'] = test_fetch_new_1min_holiday()
+def test_fetch_phase2():
+    test_result['phase2']['regular'] = test_fetch_phase2_regular()
+    test_result['phase2']['holiday'] = test_fetch_phase2_holiday()
 
 
 def print_summary():
-    results = test_result['old'].values() + \
-              test_result['new_1min'].values()
+    results = test_result['phase1'].values() + \
+              test_result['phase2'].values()
     print ""
     print "Pass: %d, Fail: %d, Skip: %d" % (results.count('p'),
                                             results.count('f'),
@@ -121,8 +122,8 @@ def print_summary():
 ###
 if __name__ == '__main__':
     args = docopt(__doc__, version="test_fetch_taiex.py 1.0")
-    print "Testing fetch from old site (every 1 minute).. "
-    test_fetch_old()
-    print "Testing fetch from new site (every 1 minute).. "
-    test_fetch_new_1min()
+    print "Testing fetch data in phase 1.. "
+    test_fetch_phase1()
+    print "Testing fetch data in phase 2.. "
+    test_fetch_phase2()
     print_summary()

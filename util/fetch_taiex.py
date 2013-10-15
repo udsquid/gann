@@ -80,7 +80,8 @@ def is_holiday(data):
     return u'查無資料' in data('body').text()
 
 
-def fetch_single1(day, cfg):
+def fetch_single1(day):
+    cfg = FETCH_CONFIG['phase-1']
     # fetch
     url = 'http://www.twse.com.tw/ch/trading/exchange/MI_5MINS_INDEX/MI_5MINS_INDEX_oldtsec.php'
     param = dict(input_date = convert_date(day))
@@ -98,7 +99,8 @@ def fetch_single1(day, cfg):
     return dict(zip(times, indexes))
 
 
-def fetch_single2(day, cfg):
+def fetch_single2(day):
+    cfg = FETCH_CONFIG['phase-2']
     # fetch
     url = 'http://www.twse.com.tw/ch/trading/exchange/MI_5MINS_INDEX/genpage/Report{year}{month:02d}/A121{year}{month:02d}{day:02d}.php?chk_date={taiex_date}'.format(year=day.year, month=day.month, day=day.day, taiex_date=convert_date(day))
     resp = requests.get(url)
@@ -107,16 +109,16 @@ def fetch_single2(day, cfg):
     if is_holiday(data):
         return None
     table = data(cfg['format']['table'])
-    _times = table(cfg['format']['times']).text().split()
-    _indexes = _times.next('td')
-    times = [t.text for t in _times[1:]]
-    indexes = [i.text.replace(',', '') for i in _indexes[1:]]
+    times = table(cfg['format']['times']).text().split()
+    _idxes = table(cfg['format']['indexes']).text().split()
+    indexes = [i.replace(',', '') for i in _idxes]
     assert len(times) == len(indexes), \
         "number of times and indexes are not match"
     return dict(zip(times, indexes))
 
 
-def fetch_single3(day, cfg):
+def fetch_single3(day):
+    cfg = FETCH_CONFIG['phase-3']
     # fetch
     url = 'http://www.twse.com.tw/ch/trading/exchange/MI_5MINS_INDEX/genpage/Report{year}{month:02d}/A121{year}{month:02d}{day:02d}.php?chk_date={taiex_date}'.format(year=day.year, month=day.month, day=day.day, taiex_date=convert_date(day))
     resp = requests.get(url)
@@ -174,19 +176,19 @@ def fetch(start, end, cfg):
 ### main procedure
 ###
 """
-TAIEX data can be divided into following parts:
+The data history of TAIEX can be divided into following phases:
 1. 2000-01-04 ~ 2004-10-14: on old site, every 1 minute
 2. 2004-10-15 ~ 2005-12-31: on new site, every 1 minute (layout 1)
 3. 2006-01-01 ~ 2011-01-15: on new site, every 1 minute (layout 2)
 4. 2011-01-16 ~ now       : on new site, every 15 seconds
 """
 FETCH_CONFIG = {
-    'old': {
+    'phase-1': {
         'lower': date(2000, 1, 4),
         'upper': date(2004, 10, 14),
         'fetch': fetch_single1,
     },
-    'new-1min-1': {
+    'phase-2': {
         'lower': date(2004, 10, 15),
         'upper': date(2005, 12, 31),
         'fetch': fetch_single2,
@@ -196,7 +198,7 @@ FETCH_CONFIG = {
             'indexes': 'tr[bgcolor="#FFFFFF"] > td:first-child + td',
         },
     },
-    'new-1min-2': {
+    'phase-3': {
         'lower': date(2006, 1, 1),
         'upper': date(2011, 1, 15),
         'fetch': fetch_single3,
@@ -219,7 +221,7 @@ if __name__ == '__main__':
     assert start <= end, "date range is not valid"
     # get daily data from specified range
     print "Fetching TAIEX from [%s] to [%s].. " % (start, end)
-    fetch(start, end, FETCH_CONFIG['old'])
-    fetch(start, end, FETCH_CONFIG['new-1min-1'])
-    fetch(start, end, FETCH_CONFIG['new-1min-2'])
+    fetch(start, end, FETCH_CONFIG['phase-1'])
+    fetch(start, end, FETCH_CONFIG['phase-2'])
+    fetch(start, end, FETCH_CONFIG['phase-3'])
     print "done!"
