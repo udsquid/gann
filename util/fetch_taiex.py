@@ -126,19 +126,10 @@ def fetch_single3(day):
     data = PyQuery(decode_page(resp.text))
     if is_holiday(data):
         return None
-    fmt1 = data('table.board_trad')
-    fmt2 = data('div#tbl-container')
-    if fmt1:
-        _times = fmt1('tr[bgcolor="#FFFFFF"] > td:first-child').text().split()
-        pass
-    elif fmt2:
-        pass
-    else:
-        assert False, "no suitable parser"
-    _times = data('tr.basic2 > td:first-child')
-    _indexes = _times.next('td')
-    times = [t.text for t in _times[1:]]
-    indexes = [i.text.replace(',', '') for i in _indexes[1:]]
+    table = data(cfg['format']['table'])
+    times = table(cfg['format']['times']).text().split()
+    _idxes = table(cfg['format']['indexes']).text().split()
+    indexes = [i.replace(',', '') for i in _idxes]
     assert len(times) == len(indexes), \
         "number of times and indexes are not match"
     return dict(zip(times, indexes))
@@ -202,6 +193,11 @@ FETCH_CONFIG = {
         'lower': date(2006, 1, 1),
         'upper': date(2011, 1, 15),
         'fetch': fetch_single3,
+        'format': {
+            'table': 'div#tbl-container',
+            'times': 'tr[align="right"] > td:first-child',
+            'indexes': '',
+        },
     },
     'new-15sec': {
         'lower': None,
