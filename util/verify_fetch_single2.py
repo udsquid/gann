@@ -46,6 +46,8 @@ def _fetch_one(day):
 def verify_html(start, end):
     """Verify the HTML structures day by day are keep the same."""
     flag = start.replace(year=start.year-1, month=1, day=1)
+    p2_format = FETCH_CONFIG['phase-2']['format']
+    p3_format = FETCH_CONFIG['phase-3']['format']
     for day in days_range(start, end):
         if flag.year != day.year:
             print "[%s] Verifying HTML in %d.." % \
@@ -55,10 +57,16 @@ def verify_html(start, end):
         data = _fetch_one(day)
         if u'查無資料' in data('body').text():
             continue
-        if not data('table.board_trad') and \
-           not data('div#tbl-container'):
+        p2_table = data(p2_format['table'])
+        p3_table = data(p3_format['table'])
+        if p2_table:
+            times = p2_table(p2_format['times']).text().split()
+        elif p3_table:
+            times = p3_table(p3_format['times']).text().split()
+        if '9:00' not in times:
             print "verify success until %s" % day
             break
+    print "OK!"
 
 
 def count_days(start, end):
