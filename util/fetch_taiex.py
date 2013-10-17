@@ -159,7 +159,7 @@ def fetch(start, end, cfg):
     # start fetching daily data
     for day in days_range(start, end):
         print "Fetching %s.." % day
-        data = ffunc(day, cfg)
+        data = ffunc(day)
         save(data, day)
 
 
@@ -196,7 +196,7 @@ FETCH_CONFIG = {
         'format': {
             'table': 'div#tbl-container',
             'times': 'tr[align="right"] > td:first-child',
-            'indexes': '',
+            'indexes': 'tr[align="right"] > td:first-child + td',
         },
     },
     'new-15sec': {
