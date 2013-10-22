@@ -80,6 +80,22 @@ def is_holiday(data):
     return u'查無資料' in data('body').text()
 
 
+def in_range(day, phase):
+    assert phase in FETCH_CONFIG, \
+        "invalid phase name [%s]" % phase
+    lower = FETCH_CONFIG[phase]['lower']
+    upper = FETCH_CONFIG[phase]['upper']
+    return day >= lower and day <= upper
+
+
+def fetch_single(day):
+    pass
+
+
+def parse_times(day):
+    pass
+
+
 def fetch_single1(day):
     cfg = FETCH_CONFIG['phase-1']
     # fetch

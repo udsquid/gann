@@ -3,10 +3,10 @@
 """Verify tool for fetch_taiex.py -- fetch_single2.
 
 Usage:
-    verify_fetch_single2.py verify html [--start=<start>] [--end=<end>]
-    verify_fetch_single2.py count days [--start=<start>] [--end=<end>]
-    verify_fetch_single2.py -h | --help
-    verify_fetch_single2.py -v | --version
+    verify_fetch_algo.py verify html [--start=<start>] [--end=<end>]
+    verify_fetch_algo.py count days [--start=<start>] [--end=<end>]
+    verify_fetch_algo.py -h | --help
+    verify_fetch_algo.py -v | --version
 
 Options:
     -h, --help         Show this screen.
@@ -46,26 +46,21 @@ def _fetch_one(day):
 def verify_html(start, end):
     """Verify the HTML structures day by day are keep the same."""
     flag = start.replace(year=start.year-1, month=1, day=1)
-    p2_format = FETCH_CONFIG['phase-2']['format']
-    p3_format = FETCH_CONFIG['phase-3']['format']
     for day in days_range(start, end):
+        # show progress by year
         if flag.year != day.year:
             print "[%s] Verifying HTML in %d.." % \
                 (datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                  day.year)
             flag = day
-        data = _fetch_one(day)
-        if u'查無資料' in data('body').text():
+        # verify time data in each trading day
+        data = fetch_single(day)
+        if is_holiday(data):
             continue
-        p2_table = data(p2_format['table'])
-        p3_table = data(p3_format['table'])
-        if p2_table:
-            times = p2_table(p2_format['times']).text().split()
-        elif p3_table:
-            times = p3_table(p3_format['times']).text().split()
+        times = parse_times(data)
         if '9:00' not in times:
             print "verify success until %s" % day
-            break
+            return
     print "OK!"
 
 
@@ -74,6 +69,7 @@ def count_days(start, end):
     trade = holiday = 0
     flag = start.replace(year=start.year-1, month=1, day=1)
     for day in days_range(start, end):
+        # show progress by year
         if flag.year != day.year:
             print "[%s] Counting days in %d.." % \
                 (datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
