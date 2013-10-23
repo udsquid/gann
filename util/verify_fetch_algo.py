@@ -57,9 +57,9 @@ def verify_html(start, end):
         data = fetch_single(day)
         if is_holiday(data):
             continue
-        times = parse_times(data)
+        times = parse_times(day, data)
         if '9:00' not in times:
-            print "verify success until %s" % day
+            print "Verify success until %s" % day
             return
     print "OK!"
 

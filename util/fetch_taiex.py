@@ -89,11 +89,27 @@ def in_range(day, phase):
 
 
 def fetch_single(day):
-    pass
+    if in_range(day, 'phase-1'):
+        url = 'http://www.twse.com.tw/ch/trading/exchange/MI_5MINS_INDEX/MI_5MINS_INDEX_oldtsec.php'
+        param = dict(input_date = convert_date(day))
+        resp = requests.post(url, param)
+    elif in_range(day, 'phase-2') or in_range(day, 'phase-3'):
+        url = 'http://www.twse.com.tw/ch/trading/exchange/MI_5MINS_INDEX/genpage/Report{year}{month:02d}/A121{year}{month:02d}{day:02d}.php?chk_date={taiex_date}'.format(year=day.year, month=day.month, day=day.day, taiex_date=convert_date(day))
+        resp = requests.get(url)
+    return PyQuery(decode_page(resp.text))
 
 
-def parse_times(day):
-    pass
+def parse_times(day, data):
+    if in_range(day, 'phase-1'):
+        return data('tr > td.AS2').text().split()
+    elif in_range(day, 'phase-2'):
+        cfg = FETCH_CONFIG['phase-2']
+        table = data(cfg['format']['table'])
+        return table(cfg['format']['times']).text().split()
+    elif in_range(day, 'phase-3'):
+        cfg = FETCH_CONFIG['phase-3']
+        table = data(cfg['format']['table'])
+        return table(cfg['format']['times']).text().split()
 
 
 def fetch_single1(day):
