@@ -11,9 +11,15 @@ Usage:
 Options:
     -h, --help         Show this screen.
     -v, --version      Show version.
-    --start=<start>    Fetch start date [default: 2004-10-15]
+    --start=<start>    Fetch start date [default: 2000-01-01]
     --end=<end>        Fetch end date [default: 2011-01-15]
 """
+
+###
+### python libraries
+###
+import re
+
 
 ###
 ### project libraries
@@ -25,7 +31,7 @@ from fetch_taiex import *
 ### helper functions
 ###
 def setup_date_boundaries(start, end):
-    LOWER = date(2004, 10, 15)
+    LOWER = date(2000, 1, 1)
     UPPER = date(2011, 1, 15)
     if start > UPPER or end < LOWER:
         return None, None
@@ -58,7 +64,9 @@ def verify_html(start, end):
         if is_holiday(data):
             continue
         times = parse_times(day, data)
-        if '9:00' not in times:
+        indexes = parse_indexes(day, data)
+        if not re.match(r'0?9:00', times[0]) or \
+           not re.match(r'\d{4,5}\.\d{2}', indexes[0]):
             print "Verify success until %s" % day
             return
     print "OK!"

@@ -93,7 +93,8 @@ def fetch_single(day):
         url = 'http://www.twse.com.tw/ch/trading/exchange/MI_5MINS_INDEX/MI_5MINS_INDEX_oldtsec.php'
         param = dict(input_date = convert_date(day))
         resp = requests.post(url, param)
-    elif in_range(day, 'phase-2') or in_range(day, 'phase-3'):
+    elif in_range(day, 'phase-2') or \
+         in_range(day, 'phase-3'):
         url = 'http://www.twse.com.tw/ch/trading/exchange/MI_5MINS_INDEX/genpage/Report{year}{month:02d}/A121{year}{month:02d}{day:02d}.php?chk_date={taiex_date}'.format(year=day.year, month=day.month, day=day.day, taiex_date=convert_date(day))
         resp = requests.get(url)
     return PyQuery(decode_page(resp.text))
@@ -110,6 +111,23 @@ def parse_times(day, data):
         cfg = FETCH_CONFIG['phase-3']
         table = data(cfg['format']['table'])
         return table(cfg['format']['times']).text().split()
+
+
+def parse_indexes(day, data):
+    if in_range(day, 'phase-1'):
+        _times = data('tr > td.AS2')
+        _indexes = _times.next('td')
+        return [i.replace(',', '') for i in _indexes.text().split()]
+    elif in_range(day, 'phase-2'):
+        cfg = FETCH_CONFIG['phase-2']
+        table = data(cfg['format']['table'])
+        _indexes = table(cfg['format']['indexes']).text().split()
+        return [i.replace(',', '') for i in _indexes]
+    elif in_range(day, 'phase-3'):
+        cfg = FETCH_CONFIG['phase-3']
+        table = data(cfg['format']['table'])
+        _indexes = table(cfg['format']['indexes']).text().split()
+        return [i.replace(',', '') for i in _indexes]
 
 
 def fetch_single1(day):
@@ -200,14 +218,14 @@ def fetch(start, end, cfg):
 ###
 """
 The data history of TAIEX can be divided into following phases:
-1. 2000-01-04 ~ 2004-10-14: on old site, every 1 minute
+1. 2000-01-01 ~ 2004-10-14: on old site, every 1 minute
 2. 2004-10-15 ~ 2005-12-31: on new site, every 1 minute (layout 1)
 3. 2006-01-01 ~ 2011-01-15: on new site, every 1 minute (layout 2)
 4. 2011-01-16 ~ now       : on new site, every 15 seconds
 """
 FETCH_CONFIG = {
     'phase-1': {
-        'lower': date(2000, 1, 4),
+        'lower': date(2000, 1, 1),
         'upper': date(2004, 10, 14),
         'fetch': fetch_single1,
     },
