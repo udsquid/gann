@@ -3,7 +3,7 @@
 """Verify tool for fetch_taiex.py -- fetch_single2.
 
 Usage:
-    verify_fetch_algo.py verify html [--start=<start>] [--end=<end>]
+    verify_fetch_algo.py verify html [--start=<start>] [--end=<end>] [--verbose]
     verify_fetch_algo.py count days [--start=<start>] [--end=<end>]
     verify_fetch_algo.py -h | --help
     verify_fetch_algo.py -v | --version
@@ -12,7 +12,8 @@ Options:
     -h, --help         Show this screen.
     -v, --version      Show version.
     --start=<start>    Fetch start date [default: 2000-01-01]
-    --end=<end>        Fetch end date [default: 2011-01-15]
+    --end=<end>        Fetch end date, default is today.
+    --verbose          Product verbose output.
 """
 
 ###
@@ -28,28 +29,9 @@ from fetch_taiex import *
 
 
 ###
-### helper functions
-###
-def setup_date_boundaries(start, end):
-    LOWER = date(2000, 1, 1)
-    UPPER = date(2011, 1, 15)
-    if start > UPPER or end < LOWER:
-        return None, None
-    start = max(start, LOWER)
-    end = min(end, UPPER)
-    return start, end
-
-
-def _fetch_one(day):
-    url = 'http://www.twse.com.tw/ch/trading/exchange/MI_5MINS_INDEX/genpage/Report{year}{month:02d}/A121{year}{month:02d}{day:02d}.php?chk_date={taiex_date}'.format(year=day.year, month=day.month, day=day.day, taiex_date=convert_date(day))
-    resp = requests.get(url)
-    return PyQuery(decode_page(resp.text))
-
-
-###
 ### test functions
 ###
-def verify_html(start, end):
+def verify_html(start, end, args):
     """Verify the HTML structures day by day are keep the same."""
     flag = start.replace(year=start.year-1, month=1, day=1)
     for day in days_range(start, end):
@@ -65,7 +47,9 @@ def verify_html(start, end):
             continue
         times = parse_times(day, data)
         indexes = parse_indexes(day, data)
-        if not re.match(r'0?9:00', times[0]) or \
+        if args['--verbose']:
+            print "[%s %s] %s" % (day, times[0], indexes[0])
+        if not re.match(r'0?9:00(:00)?', times[0]) or \
            not re.match(r'\d{4,5}\.\d{2}', indexes[0]):
             print "Verify success until %s" % day
             return
@@ -83,13 +67,18 @@ def count_days(start, end):
                 (datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                  day.year)
             flag = day
-        data = _fetch_one(day)
-        if u'查無資料' in data('body').text():
+        # count trading days and holidays
+        data = fetch_single(day)
+        if is_holiday(data):
             holiday += 1
         else:
-            trade += 1
+            times = parse_times(day, data)
+            if re.match(r'0?9:00(:00)?', times[0]):
+                trade += 1
+    # do sanity check
     assert total == (trade + holiday), \
         "days number are not match"
+    # print result
     print "Total: %d, trade: %d, holiday: %d" % (total, trade, holiday)
 
 
@@ -98,14 +87,17 @@ def count_days(start, end):
 ###
 if __name__ == '__main__':
     args = docopt(__doc__, version="fetch_taiex_single2.py 1.0")
-    # setup the date range
+    # setup date range
     start = normalize_date(args['--start'])
-    end = normalize_date(args['--end'])
-    start, end = setup_date_boundaries(start, end)
-    assert start or end, "*** Error: Date range is not correct!"
+    if args['--end']:
+        end = normalize_date(args['--end'])
+    else:
+        end = date.today()
+    assert start <= end, "date range is not valid"
     # start verifying
+    print "Verifying from [%s] to [%s].. " % (start, end)
     if args['verify']:
-        verify_html(start, end)
+        verify_html(start, end, args)
     elif args['count']:
         if args['days']:
             count_days(start, end)
