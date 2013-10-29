@@ -77,7 +77,8 @@ def decode_page(content):
 
 
 def is_holiday(data):
-    return u'查無資料' in data('body').text()
+    return u'查無資料' in data('body').text() or \
+        '404 Not Found' in data.text()
 
 
 def in_range(day, phase):
@@ -94,7 +95,8 @@ def fetch_single(day):
         param = dict(input_date = convert_date(day))
         resp = requests.post(url, param)
     elif in_range(day, 'phase-2') or \
-         in_range(day, 'phase-3'):
+         in_range(day, 'phase-3') or \
+         in_range(day, 'phase-4'):
         url = 'http://www.twse.com.tw/ch/trading/exchange/MI_5MINS_INDEX/genpage/Report{year}{month:02d}/A121{year}{month:02d}{day:02d}.php?chk_date={taiex_date}'.format(year=day.year, month=day.month, day=day.day, taiex_date=convert_date(day))
         resp = requests.get(url)
     return PyQuery(decode_page(resp.text))
@@ -109,6 +111,10 @@ def parse_times(day, data):
         return table(cfg['format']['times']).text().split()
     elif in_range(day, 'phase-3'):
         cfg = FETCH_CONFIG['phase-3']
+        table = data(cfg['format']['table'])
+        return table(cfg['format']['times']).text().split()
+    elif in_range(day, 'phase-4'):
+        cfg = FETCH_CONFIG['phase-4']
         table = data(cfg['format']['table'])
         return table(cfg['format']['times']).text().split()
 
@@ -128,6 +134,19 @@ def parse_indexes(day, data):
         table = data(cfg['format']['table'])
         _indexes = table(cfg['format']['indexes']).text().split()
         return [i.replace(',', '') for i in _indexes]
+    elif in_range(day, 'phase-4'):
+        cfg = FETCH_CONFIG['phase-4']
+        table = data(cfg['format']['table'])
+        _indexes = table(cfg['format']['indexes']).text().split()
+        return [i.replace(',', '') for i in _indexes]
+
+
+def parse(day, data):
+    times = parse_times(day, data)
+    indexes = parse_indexes(day, data)
+    assert len(times) == len(indexes), \
+        "number of times and indexes are not match"
+    return dict(zip(times, indexes))
 
 
 def fetch_single1(day):
@@ -249,10 +268,15 @@ FETCH_CONFIG = {
             'indexes': 'tr[align="right"] > td:first-child + td',
         },
     },
-    'new-15sec': {
-        'lower': None,
-        'upper': None,
-        'fetch': None,
+    'phase-4': {
+        'lower': date(2011, 01, 16),
+        'upper': date.today(),
+        'fetch': fetch_single3,
+        'format': {
+            'table': 'div#tbl-container',
+            'times': 'tr[align="right"] > td:first-child',
+            'indexes': 'tr[align="right"] > td:first-child + td',
+        },
     },
 }
 
@@ -270,4 +294,5 @@ if __name__ == '__main__':
     fetch(start, end, FETCH_CONFIG['phase-1'])
     fetch(start, end, FETCH_CONFIG['phase-2'])
     fetch(start, end, FETCH_CONFIG['phase-3'])
+    fetch(start, end, FETCH_CONFIG['phase-4'])
     print "done!"
