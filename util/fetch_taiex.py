@@ -10,7 +10,7 @@ Usage:
 Options:
     -h, --help         Show this screen.
     -v, --version      Show version.
-    --start=<start>    The start date to fetch data [default: 2000-01-04].
+    --start=<start>    The start date to fetch data [default: 2000-01-01].
     --end=<end>        The end date to fetch data, default is today.
 """
 
@@ -41,6 +41,7 @@ from history import models as MD
 ###
 ### constants
 ###
+# --- common ---
 ONE_DAY = timedelta(1)
 
 # --- error codes ---
@@ -149,62 +150,7 @@ def parse(day, data):
     return dict(zip(times, indexes))
 
 
-def fetch_single1(day):
-    cfg = FETCH_CONFIG['phase-1']
-    # fetch
-    url = 'http://www.twse.com.tw/ch/trading/exchange/MI_5MINS_INDEX/MI_5MINS_INDEX_oldtsec.php'
-    param = dict(input_date = convert_date(day))
-    resp = requests.post(url, param)
-    # parse
-    data = PyQuery(decode_page(resp.text))
-    if is_holiday(data):
-        return None
-    _times = data('tr > td.AS2')
-    _indexes = _times.next('td')
-    times = _times.text().split()
-    indexes = [i.replace(',', '') for i in _indexes.text().split()]
-    assert len(times) == len(indexes), \
-        "number of times and indexes are not match"
-    return dict(zip(times, indexes))
-
-
-def fetch_single2(day):
-    cfg = FETCH_CONFIG['phase-2']
-    # fetch
-    url = 'http://www.twse.com.tw/ch/trading/exchange/MI_5MINS_INDEX/genpage/Report{year}{month:02d}/A121{year}{month:02d}{day:02d}.php?chk_date={taiex_date}'.format(year=day.year, month=day.month, day=day.day, taiex_date=convert_date(day))
-    resp = requests.get(url)
-    # parse
-    data = PyQuery(decode_page(resp.text))
-    if is_holiday(data):
-        return None
-    table = data(cfg['format']['table'])
-    times = table(cfg['format']['times']).text().split()
-    _idxes = table(cfg['format']['indexes']).text().split()
-    indexes = [i.replace(',', '') for i in _idxes]
-    assert len(times) == len(indexes), \
-        "number of times and indexes are not match"
-    return dict(zip(times, indexes))
-
-
-def fetch_single3(day):
-    cfg = FETCH_CONFIG['phase-3']
-    # fetch
-    url = 'http://www.twse.com.tw/ch/trading/exchange/MI_5MINS_INDEX/genpage/Report{year}{month:02d}/A121{year}{month:02d}{day:02d}.php?chk_date={taiex_date}'.format(year=day.year, month=day.month, day=day.day, taiex_date=convert_date(day))
-    resp = requests.get(url)
-    # parse
-    data = PyQuery(decode_page(resp.text))
-    if is_holiday(data):
-        return None
-    table = data(cfg['format']['table'])
-    times = table(cfg['format']['times']).text().split()
-    _idxes = table(cfg['format']['indexes']).text().split()
-    indexes = [i.replace(',', '') for i in _idxes]
-    assert len(times) == len(indexes), \
-        "number of times and indexes are not match"
-    return dict(zip(times, indexes))
-
-
-def save(data, day):
+def save(day, data):
     if not data:
         return
     for time, index in data.iteritems():
@@ -215,21 +161,16 @@ def save(data, day):
         rec.save()
 
 
-def fetch(start, end, cfg):
-    LOWER = cfg['lower']
-    UPPER = cfg['upper']
-    ffunc = cfg['fetch']
-    # adjust date boundaries
-    if start > UPPER or end < LOWER:
-        # not in this range
-        return
-    start = max(start, LOWER)
-    end = min(end, UPPER)
-    # start fetching daily data
+def fetch(start, end):
     for day in days_range(start, end):
-        print "Fetching %s.." % day
-        data = ffunc(day)
-        save(data, day)
+        print "Fetching %s.. " % day,
+        data = fetch_single(day)
+        if is_holiday(data):
+            print "holiday, skip!"
+            continue
+        indexes = parse(day, data)
+        save(day, indexes)
+        print ""
 
 
 ###
@@ -246,12 +187,10 @@ FETCH_CONFIG = {
     'phase-1': {
         'lower': date(2000, 1, 1),
         'upper': date(2004, 10, 14),
-        'fetch': fetch_single1,
     },
     'phase-2': {
         'lower': date(2004, 10, 15),
         'upper': date(2005, 12, 31),
-        'fetch': fetch_single2,
         'format': {
             'table': 'table.board_trad',
             'times': 'tr[bgcolor="#FFFFFF"] > td:first-child',
@@ -261,7 +200,6 @@ FETCH_CONFIG = {
     'phase-3': {
         'lower': date(2006, 1, 1),
         'upper': date(2011, 1, 15),
-        'fetch': fetch_single3,
         'format': {
             'table': 'div#tbl-container',
             'times': 'tr[align="right"] > td:first-child',
@@ -271,7 +209,6 @@ FETCH_CONFIG = {
     'phase-4': {
         'lower': date(2011, 01, 16),
         'upper': date.today(),
-        'fetch': fetch_single3,
         'format': {
             'table': 'div#tbl-container',
             'times': 'tr[align="right"] > td:first-child',
@@ -291,8 +228,5 @@ if __name__ == '__main__':
     assert start <= end, "date range is not valid"
     # get daily data from specified range
     print "Fetching TAIEX from [%s] to [%s].. " % (start, end)
-    fetch(start, end, FETCH_CONFIG['phase-1'])
-    fetch(start, end, FETCH_CONFIG['phase-2'])
-    fetch(start, end, FETCH_CONFIG['phase-3'])
-    fetch(start, end, FETCH_CONFIG['phase-4'])
+    fetch(start, end)
     print "done!"
