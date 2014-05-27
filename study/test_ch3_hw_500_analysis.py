@@ -42,14 +42,26 @@ class Ch3HwAnalysisTest(unittest.TestCase):
     def test_count_view_point_reach(self):
         lines = ANA.read_source()
         records = ANA.parse_records(lines)
-        c = ANA.count_view_point_reach(records[0])
-        self.assertEqual(c, 2)
-        c = ANA.count_view_point_reach(records[1])
-        self.assertEqual(c, 2)
-        c = ANA.count_view_point_reach(records[2])
-        self.assertEqual(c, 2)
-        c = ANA.count_view_point_reach(records[3])
-        self.assertEqual(c, 1)
+        count = ANA.count_view_point_reach(records[0])
+        self.assertEqual(count, 2)
+        count = ANA.count_view_point_reach(records[1])
+        self.assertEqual(count, 2)
+        count = ANA.count_view_point_reach(records[2])
+        self.assertEqual(count, 2)
+        count = ANA.count_view_point_reach(records[3])
+        self.assertEqual(count, 1)
+
+
+    def test_collect_view_point_reach(self):
+        lines = ANA.read_source()
+        records = ANA.parse_records(lines)
+        stat_angle, stat_cross = ANA.collect_view_point_reach(records)
+        counter = Counter(stat_angle)
+        angle_count = sum(counter.values())
+        self.assertEqual(angle_count, 59)
+        counter = Counter(stat_cross)
+        cross_count = sum(counter.values())
+        self.assertEqual(cross_count, 135)
 
 
 ###

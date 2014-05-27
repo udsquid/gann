@@ -8,6 +8,7 @@ and output following Gann's analysis:
 ### python library
 ###
 
+from collections import Counter
 import re
 
 ###
@@ -103,10 +104,58 @@ def parse_point_lines(lines):
     return points
 
 
+def collect_view_point_reach(records):
+    stat_angle = []
+    stat_cross = []
+    for r in records:
+        c = count_view_point_reach(r)
+        if r['type'] == '^':
+            stat_angle.append(c)
+        elif r['type'] == '+':
+            stat_cross.append(c)
+        else:
+            err_msg = "unknown type '{type}' for index {index}".format(**r)
+            assert False, err_msg
+    return stat_angle, stat_cross
+
+
+def print_header(text, width=30):
+    print "=" * width
+    print text.center(width)
+    print "=" * width
+
+
+def print_reach_count(stat):
+    reach_counter = Counter(stat)
+    reach_min = min(reach_counter)
+    reach_max = max(reach_counter)
+    result = ''
+    for number in range(reach_min, reach_max+1):
+        count = reach_counter[number]
+        result += "%d " % count
+    print "    Reach count: %s" % result
+
+
+def print_most_common(stat):
+    reach_counter = Counter(stat)
+    print "    Most common: %s" % reach_counter.most_common(3)
+
+
+def print_view_point_reach(stat_angle, stat_cross):
+    print_header("View points reach")
+    print "Angle:"
+    print_reach_count(stat_angle)
+    print_most_common(stat_angle)
+    print "Cross:"
+    print_reach_count(stat_cross)
+    print_most_common(stat_cross)
+
+
 def main():
     lines = read_source()
     records = parse_records(lines)
-    # done
+    stat_angle, stat_cross = collect_view_point_reach(records)
+    print_view_point_reach(stat_angle, stat_cross)
     print "Done!"
 
 
