@@ -156,6 +156,7 @@ def main():
     records = parse_records(lines)
     stat_angle, stat_cross = collect_view_point_reach(records)
     print_view_point_reach(stat_angle, stat_cross)
+    print '-'*30
     print "Done!"
 
 
