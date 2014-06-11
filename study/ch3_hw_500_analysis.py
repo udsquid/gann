@@ -9,6 +9,7 @@ and output following Gann's analysis:
 ###
 
 from collections import Counter
+from itertools import tee, izip
 import re
 
 ###
@@ -37,6 +38,27 @@ POINT_PATTERN = """
 """
 
 ###
+### helper functions
+###
+
+def print_header(text, width=30):
+    print "=" * width
+    print text.center(width)
+    print "=" * width
+
+
+def print_footer():
+    print
+
+
+def pairwise(iterable):
+    """i -> (i0, i1), (i1, i2), (i2, i3), ..."""
+    iter1, iter2 = tee(iterable)
+    next(iter2)
+    return izip(iter1, iter2)
+
+
+###
 ### main procedure
 ###
 
@@ -59,11 +81,11 @@ def read_source():
 def parse_records(lines):
     records = list()
     while lines:
-        i, t = parse_start_line(lines)
-        p = parse_point_lines(lines)
-        record = {'index': int(i),
-                  'type': t,
-                  'points': p}
+        _index, _type = parse_start_line(lines)
+        _points = parse_point_lines(lines)
+        record = {'index': int(_index),
+                  'type': _type,
+                  'points': _points}
         records.append(record)
     return records
 
@@ -119,12 +141,6 @@ def collect_view_point_reach(records):
     return stat_angle, stat_cross
 
 
-def print_header(text, width=30):
-    print "=" * width
-    print text.center(width)
-    print "=" * width
-
-
 def print_reach_count(stat):
     reach_counter = Counter(stat)
     reach_min = min(reach_counter)
@@ -136,12 +152,14 @@ def print_reach_count(stat):
     print "    Reach count: %s" % result
 
 
-def print_most_common(stat):
-    reach_counter = Counter(stat)
-    print "    Most common: %s" % reach_counter.most_common(3)
+def print_most_common(stat, number=3, indent=4):
+    counter = Counter(stat)
+    print "%sMost common: %s" % (" "*indent,
+                                 counter.most_common(number))
 
 
-def print_view_point_reach(stat_angle, stat_cross):
+def print_view_point_reach(records):
+    stat_angle, stat_cross = collect_view_point_reach(records)
     print_header("View points reach")
     print "Angle:"
     print_reach_count(stat_angle)
@@ -149,13 +167,62 @@ def print_view_point_reach(stat_angle, stat_cross):
     print "Cross:"
     print_reach_count(stat_cross)
     print_most_common(stat_cross)
+    print_footer()
+
+
+def print_amplitude_population():
+    print_header("Amplitude population")
+    with open('../data/taiex_high_low.txt') as source:
+        lines = source.readlines()
+        indexes = []
+        for line in lines:
+            day, index = line.split(',')
+            index = int(index)
+            indexes.append(index)
+    assert len(indexes) == 487, "wrong number of indexes"
+    pairs = pairwise(indexes)
+    less_than_500_count = 0
+    more_than_500_count = 0
+    for v1, v2 in pairs:
+        diff = abs(v1-v2)
+        if diff < 500:
+            less_than_500_count += 1
+        else:
+            more_than_500_count += 1
+    print "Less than 500: %d" % less_than_500_count
+    print "More than 500: %d" % more_than_500_count
+    print_footer()
+
+
+def print_continuous_angle_stat(records):
+    print_header("Consecutive angle statistics")
+    consecutive_counts = []
+    angles = 0
+    prev_is_angle = False
+    for r in records:
+        if r['type'] == '+' and prev_is_angle:
+            consecutive_counts.append(angles)
+            prev_is_angle = False
+            angles = 0
+            continue
+        if r['type'] == '^':
+            prev_is_angle = True
+            angles += 1
+            continue
+    if prev_is_angle:
+        consecutive_counts.append(angles)
+    print "Consecutive counts: %s" % consecutive_counts
+    histogram = Counter(consecutive_counts)
+    print "Histogram: %s" % histogram.most_common()
+    print_footer()
 
 
 def main():
     lines = read_source()
     records = parse_records(lines)
-    stat_angle, stat_cross = collect_view_point_reach(records)
-    print_view_point_reach(stat_angle, stat_cross)
+    print_view_point_reach(records)
+    print_amplitude_population()
+    print_continuous_angle_stat(records)
     print '-'*30
     print "Done!"
 
