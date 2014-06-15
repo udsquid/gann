@@ -79,6 +79,18 @@ def read_source():
 
 
 def parse_records(lines):
+    """
+    Parse source data into following format:
+    {'index': DIGIT,
+     'type': '^' | '+',
+     'points': [{'value': DIGIT,
+                 'length': DIGIT,
+                 'attributes': '*' | '*&'}]}
+    * 'value' is the point value on gann chart
+    * 'length' is the distance from last high/low point
+    * '^' is for angle, '+' is for cross
+    * '*' is for end point, '*&' is for end point on view point
+    """
     records = list()
     while lines:
         _index, _type = parse_start_line(lines)
@@ -217,12 +229,45 @@ def print_continuous_angle_stat(records):
     print_footer()
 
 
+def print_view_points_length(record, n=None):
+    """
+    Print the length of view points, if 'n' is given
+    then first nth view points will be printed out.
+    """
+    assert isinstance(n, int), "'n' must to be an integer"
+    for index, point in enumerate(record['points']):
+        if index == n:
+            break
+        # meet end point before nth point, stop
+        if 'end' in point['attributes']:
+            # if end point is on view point, print and stop
+            if 'view' in point['attributes']:
+                print "%4d" % point['length'],
+            break
+        print "%4d" % point['length'],
+    print ""
+
+
+def print_distance_population(records):
+    print_header("Distance population")
+    for record in records:
+        print "{index:5d} {type}".format(**record),
+        if record['type'] == '^':
+            print_view_points_length(record, n=4)
+        elif record['type'] == '+':
+            print_view_points_length(record, n=2)
+        else:
+            assert False, "unsupported type: %s" % record['type']
+    print_footer()
+
+
 def main():
     lines = read_source()
     records = parse_records(lines)
     print_view_point_reach(records)
     print_amplitude_population()
     print_continuous_angle_stat(records)
+    print_distance_population(records)
     print '-'*30
     print "Done!"
 
