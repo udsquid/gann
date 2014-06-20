@@ -11,6 +11,7 @@ and output following Gann's analysis:
 from collections import Counter
 from itertools import tee, izip
 import re
+import sys
 
 ###
 ### constants
@@ -85,11 +86,11 @@ def parse_records(lines):
      'type': '^' | '+',
      'points': [{'value': DIGIT,
                  'length': DIGIT,
-                 'attributes': '*' | '*&'}]}
+                 'attributes': ['view' | 'end']}]}
     * 'value' is the point value on gann chart
     * 'length' is the distance from last high/low point
     * '^' is for angle, '+' is for cross
-    * '*' is for end point, '*&' is for end point on view point
+    * sometimes 'view' and 'end' might on the same point
     """
     records = list()
     while lines:
@@ -229,6 +230,15 @@ def print_continuous_angle_stat(records):
     print_footer()
 
 
+def print_end_point_length(record):
+    for point in record['points']:
+        if 'end' in point['attributes']:
+            msg = ",%6d" % point['length']
+            sys.stdout.write(msg)
+            return
+    raise Exception("no end point in record")
+
+
 def print_view_points_length(record, n=None):
     """
     Print the length of view points, if 'n' is given
@@ -242,16 +252,22 @@ def print_view_points_length(record, n=None):
         if 'end' in point['attributes']:
             # if end point is on view point, print and stop
             if 'view' in point['attributes']:
-                print "%4d" % point['length'],
+                msg = ",%5d" % point['length']
+                sys.stdout.write(msg)
             break
-        print "%4d" % point['length'],
+        msg = ",%5d" % point['length']
+        sys.stdout.write(msg)
     print ""
 
 
 def print_distance_population(records):
     print_header("Distance population")
+    print "index type length   VP1   VP2   VP3   VP4"
+    print "-----------------------------------------"
     for record in records:
-        print "{index:5d} {type}".format(**record),
+        first_two_columns = "{index:5d},{type:>4s}".format(**record)
+        sys.stdout.write(first_two_columns)
+        print_end_point_length(record)
         if record['type'] == '^':
             print_view_points_length(record, n=4)
         elif record['type'] == '+':
@@ -268,7 +284,6 @@ def main():
     print_amplitude_population()
     print_continuous_angle_stat(records)
     print_distance_population(records)
-    print '-'*30
     print "Done!"
 
 
