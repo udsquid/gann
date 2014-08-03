@@ -1,19 +1,22 @@
-###
-### project libraries
-###
+#!/usr/bin/env python
+
+#
+# project libraries
+#
 import high_low_reader as HLR
 
 
-###
-### constants
-###
+#
+# constants
+#
 TIME_ERR = "The time of the %s item is wrong!"
 PRICE_ERR = "The price of the %s item is wrong!"
 
 
-###
-### main procedure
-###
+#
+# main procedure
+#
+
 # read indexes
 import os.path
 records = HLR.do_read(os.path.abspath("data/taiex_high_low.txt"))
