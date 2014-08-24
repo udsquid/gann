@@ -17,7 +17,15 @@ class Taiex(models.Model):
 
 class Tx(models.Model):
     time = models.DateTimeField()
-    price = models.DecimalField(max_digits=12, decimal_places=0)
+    open = models.DecimalField(max_digits=12, decimal_places=0)
+    high = models.DecimalField(max_digits=12, decimal_places=0)
+    low = models.DecimalField(max_digits=12, decimal_places=0)
+    close = models.DecimalField(max_digits=12, decimal_places=0)
 
     def __unicode__(self):
-        return "[%s] %s" % (self.time, self.price)
+        return "[%s] %s|%s|%s|%s" % (self.time,
+                                     self.open,
+                                     self.high,
+                                     self.low,
+                                     self.close)
+             
