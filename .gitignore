@@ -1,3 +1,4 @@
 *.pyc
 example_*.py
 .DS_Store
+southtut/
