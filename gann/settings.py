@@ -126,6 +126,7 @@ INSTALLED_APPS = (
     'history',
     'south',
     'southtut',
+    'southtut2',
 )
 
 # A sample logging configuration. The only tangible logging
