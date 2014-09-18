@@ -7,7 +7,7 @@ from django.contrib import admin
 #
 # project libraries
 #
-from history.models import Taiex, Tx
+from history.models import *
 
 
 #
@@ -32,5 +32,10 @@ class TxAdmin(admin.ModelAdmin):
     date_hierarchy = 'time'
     ordering = ('time',)
 
+class ProductInfoAdmin(admin.ModelAdmin):
+    list_display = ('symbol', 'full_name', 'market', 'tick_value')
+    ordering = ('market', 'symbol',)
+
 admin.site.register(Taiex, TaiexAdmin)
 admin.site.register(Tx, TxAdmin)
+admin.site.register(ProductInfo, ProductInfoAdmin)
