@@ -28,4 +28,11 @@ class Tx(models.Model):
                                      self.high,
                                      self.low,
                                      self.close)
-             
+
+class ProductInfo(models.Model):
+    symbol = models.CharField(max_length=10)
+    full_name = models.CharField(max_length=200)
+    market = models.CharField(max_length=100)
+    tick_value = models.DecimalField(max_digits=10,
+                                     decimal_places=2,
+                                     null=True)
