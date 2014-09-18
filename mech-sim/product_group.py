@@ -7,7 +7,7 @@ from django.utils import timezone
 #
 # project libraries
 #
-from history.models import Taiex, Tx
+from history.models import *
 
 
 #
@@ -16,8 +16,11 @@ from history.models import Taiex, Tx
 class ProductGroup():
     """Sub-group commands handler for product information."""
 
-    symbols = ['TAIEX', 'TX']
     actions = ['list', 'info']
+
+    def __init__(self):
+        products = ProductInfo.objects.all()
+        self.symbols = [p.symbol for p in products]
 
     def complete_command(self, text, line, begin_index, end_index):
         if self.has_complete_action(line):
