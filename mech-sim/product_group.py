@@ -58,38 +58,27 @@ class ProductGroup():
         # calculate info title length for printing
         info_title = dict(
             symbol='Symbol',
-            name='Name',
-            size='Contract size',
+            name='Full name',
+            tick='Tick value',
             begin='Begin time',
             end='End time',
             )
         item_len = [len(v) for v in info_title.values()]
         min_width = max(item_len)
         # print info
+        product = ProductInfo.objects.get(symbol=symbol)
+        print "{symbol:>{width}}: {value}".format(value=product.symbol,
+                                                  width=min_width,
+                                                  **info_title)
+        print "{name:>{width}}: {value}".format(value=product.full_name,
+                                                width=min_width,
+                                                **info_title)
+        print "{tick:>{width}}: {value}".format(value=product.tick_value,
+                                                width=min_width,
+                                                **info_title)
         if symbol == 'TAIEX':
-            print "{symbol:>{width}}: {value}".format(value=symbol,
-                                                      width=min_width,
-                                                      **info_title)
-            full_name = "Taiwan Stock Exchange " + \
-                        "Capitalization Weighted Stock Index"
-            print "{name:>{width}}: {value}".format(value=full_name,
-                                                    width=min_width,
-                                                    **info_title)
-            print "{size:>{width}}: {value}".format(value=None,
-                                                    width=min_width,
-                                                    **info_title)
             self._print_time_range(Taiex, info_title, min_width)
         elif symbol == 'TX':
-            print "{symbol:>{width}}: {value}".format(value=symbol,
-                                                      width=min_width,
-                                                      **info_title)
-            full_name = "TAIEX Futures"
-            print "{name:>{width}}: {value}".format(value=full_name,
-                                                    width=min_width,
-                                                    **info_title)
-            print "{size:>{width}}: {value}".format(value='200 NTD',
-                                                    width=min_width,
-                                                    **info_title)
             self._print_time_range(Tx, info_title, min_width)
 
     def _print_time_range(self, product, title_dict, title_width):
