@@ -35,7 +35,8 @@ from docopt import docopt
 # project libraries
 #
 from lib.docopt_decorator import docopt_cmd
-import product_group as PG
+import IndexGroup as IG
+import ProductGroup as PG
 
 
 #
@@ -49,6 +50,7 @@ class MainInteractive(cmd.Cmd):
     prompt = "mech-sim$ "
 
     product_group = PG.ProductGroup()
+    index_group = IG.IndexGroup()
 
     def emptyline(self):
         """Override with no action to avoid repeat last command,
@@ -66,7 +68,7 @@ class MainInteractive(cmd.Cmd):
         return self.product_group.complete_command(
             text, line, begin_index, end_index)
 
-    @docopt_cmd
+    @docopt_cmd(PG.ProductGroup)
     def do_product(self, arg):
         """Usage:
         product list
@@ -74,6 +76,14 @@ class MainInteractive(cmd.Cmd):
         """
 
         self.product_group.perform(arg)
+
+    def complete_index(self, text, line, begin_index, end_index):
+        return self.index_group.complete_command(
+            text, line, begin_index, end_index)
+
+    @docopt_cmd(IG.IndexGroup)
+    def do_index(self, arg):
+        self.index_group.perform(arg)
 
 option = docopt(__doc__, version='Mechanism Simulator 1.0')
 if option['--interactive']:

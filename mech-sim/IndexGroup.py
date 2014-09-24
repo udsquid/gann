@@ -8,7 +8,13 @@ from history.models import *
 # module classes
 #
 class IndexGroup():
-    """Sub-group commands handler for index searching."""
+    """Usage:
+    index product <symbol>
+    index range (start | end) <date> [<time>]
+    index status
+    index (search | searchf) <operator> <value>
+        [(and | or) <operator> <value>]
+    """
 
     def __init__(self):
         products = ProductInfo.objects.all()
