@@ -14,7 +14,10 @@ from history.models import *
 # module classes
 #
 class ProductGroup():
-    """Sub-group commands handler for product information."""
+    """Usage:
+    product list
+    product info <symbol>
+    """
 
     actions = ['list', 'info']
 

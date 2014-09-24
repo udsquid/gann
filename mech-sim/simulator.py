@@ -70,11 +70,6 @@ class MainInteractive(cmd.Cmd):
 
     @docopt_cmd(PG.ProductGroup)
     def do_product(self, arg):
-        """Usage:
-        product list
-        product info <symbol>
-        """
-
         self.product_group.perform(arg)
 
     def complete_index(self, text, line, begin_index, end_index):
