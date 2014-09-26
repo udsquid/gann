@@ -1,3 +1,12 @@
+"""
+Sub-group commands for product operations.
+
+Usage:
+    product list
+    product info <symbol>
+"""
+
+
 #
 # 3-party libraries
 #
@@ -14,10 +23,6 @@ from history.models import *
 # module classes
 #
 class ProductGroup():
-    """Usage:
-    product list
-    product info <symbol>
-    """
 
     actions = ['list', 'info']
 
@@ -27,7 +32,7 @@ class ProductGroup():
 
     def complete_command(self, text, line, begin_index, end_index):
         if self.has_complete_action(line):
-            return []
+            return [text]
         elif not text:
             return self.actions
         else:

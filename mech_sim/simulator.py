@@ -68,7 +68,7 @@ class MainInteractive(cmd.Cmd):
         return self.product_group.complete_command(
             text, line, begin_index, end_index)
 
-    @docopt_cmd(PG.ProductGroup)
+    @docopt_cmd(PG)
     def do_product(self, arg):
         self.product_group.perform(arg)
 
@@ -76,7 +76,7 @@ class MainInteractive(cmd.Cmd):
         return self.index_group.complete_command(
             text, line, begin_index, end_index)
 
-    @docopt_cmd(IG.IndexGroup)
+    @docopt_cmd(IG)
     def do_index(self, arg):
         self.index_group.perform(arg)
 
