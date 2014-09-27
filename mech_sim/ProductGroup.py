@@ -44,6 +44,7 @@ class ProductGroup():
 
     def has_complete_action(self, line):
         for act in self.actions:
+            act += ' '
             if act in line:
                 return True
         return False
