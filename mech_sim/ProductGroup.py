@@ -64,6 +64,7 @@ class ProductGroup():
     def show_product_info(self, symbol):
         if symbol not in self.symbols:
             print "*** unknown symbol: %s" % symbol
+            return
         # calculate info title length for printing
         info_title = dict(
             symbol='Symbol',
