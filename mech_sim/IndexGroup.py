@@ -40,7 +40,6 @@ class IndexGroup():
             return completions
 
     def has_complete_action(self, line):
-        print '[%s]' % line
         for act in self.actions:
             act += ' '
             if act in line:
