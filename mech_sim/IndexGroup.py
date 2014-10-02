@@ -66,7 +66,8 @@ class IndexGroup():
 
     def perform(self, arg):
         if arg['product']:
-            self.set_product(arg['<symbol>'])
+            symbol = arg['<symbol>'].upper()
+            self.set_product(symbol)
         elif arg['range']:
             if arg['reset']:
                 self.reset_range()
