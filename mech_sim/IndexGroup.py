@@ -68,7 +68,10 @@ class IndexGroup():
         if arg['product']:
             self.set_product(arg['<symbol>'])
         elif arg['range']:
-            self.set_range(arg)
+            if arg['reset']:
+                self.reset_range()
+            else:
+                self.set_range(arg)
         elif arg['status']:
             self.show_status()
         elif arg['search']:
@@ -85,11 +88,6 @@ class IndexGroup():
         self.symbol = symbol
 
     def set_range(self, arg):
-        if arg['reset']:
-            self.range_start = None
-            self.range_end = None
-            return
-
         time_ = self._parse_datetime_arg(arg)
         if not time_:
             print "*** invalid date-time format"
@@ -99,6 +97,10 @@ class IndexGroup():
         elif arg['end']:
             self.range_end = time_
         self._check_range()
+
+    def reset_range(self):
+        self.range_start = None
+        self.range_end = None
 
     def _check_range(self):
         start = self.range_start
