@@ -76,7 +76,7 @@ class IndexGroup():
         elif arg['status']:
             self.show_status()
         elif arg['search']:
-            print 'do search...'
+            self.search()
         elif arg['searchf']:
             print 'do searchf...'
         else:
