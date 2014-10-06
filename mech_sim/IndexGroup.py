@@ -7,7 +7,7 @@ Usage:
     index range reset
     index status
     index (search | searchf) <operator> <value>
-        [(and | or) <operator> <value>]
+        [((and | or) <operator> <value>)]
 """
 
 
@@ -20,6 +20,7 @@ import datetime
 #
 # 3-party libraries
 #
+from django.db.models import Q
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 import pytz
@@ -76,7 +77,7 @@ class IndexGroup():
         elif arg['status']:
             self.show_status()
         elif arg['search']:
-            self.search()
+            self.do_search(arg)
         elif arg['searchf']:
             print 'do searchf...'
         else:
@@ -86,7 +87,12 @@ class IndexGroup():
         if symbol not in self.symbols:
             print "*** unknown symbol: %s" % symbol
             return
+
         self.symbol = symbol
+        if self.symbol == 'TAIEX':
+            self.product = Taiex.objects
+        elif self.symbol == 'TX':
+            self.product = Tx.objects
 
     def set_range(self, arg):
         time_ = self._parse_datetime_arg(arg)
@@ -163,6 +169,46 @@ class IndexGroup():
     def do_search(self, arg):
         if not self._check_symbol():
             return
+
+        history = self.product.order_by('time')
+        # setup filters
+        if self.range_start:
+            history = history.filter(Q(time__gte=self.range_start))
+        if self.range_end:
+            history = history.filter(Q(time__lte=self.range_end))
+        if arg['and'] or arg['or']:
+            op1, op2 = arg['<operator>']
+            v1, v2 = arg['<value>']
+            q1 = self._make_price_Q_object(op1, v1)
+            q2 = self._make_price_Q_object(op2, v2)
+            if arg['and']:
+                history = history.filter(q1, q2)
+            elif arg['or']:
+                history = history.filter(q1 | q2)
+        else:
+            op = arg['<operator>'][0]
+            v = arg['<value>'][0]
+            q = self._make_price_Q_object(op, v)
+            history = history.filter(q)
+        # show first 5 records
+        first_5 = history[:5]
+        for rec in first_5:
+            # TODO: translate time from UTC to local
+            print rec
+
+    def _make_price_Q_object(self, op, value):
+        if op == '<':
+            return Q(price__lt=value)
+        elif op == '<=':
+            return Q(price__lte=value)
+        elif op == '=':
+            return Q(price=value)
+        elif op == '>':
+            return Q(price__gt=value)
+        elif op == '>=':
+            return Q(price__gte=value)
+        else:
+            print "*** unknown operator: %s" % op
 
     def do_searchf(self, arg):
         if not self._check_symbol():
