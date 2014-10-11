@@ -1,7 +1,16 @@
 #
-# django libraries
+# 3-party libraries
 #
 from django.db import models
+from django.utils import timezone
+import pytz
+
+
+#
+# module constants
+#
+CURRENT_TIMEZONE = timezone.get_current_timezone()
+TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 
 #
@@ -12,7 +21,10 @@ class Taiex(models.Model):
     price = models.DecimalField(max_digits=12, decimal_places=2)
 
     def __unicode__(self):
-        return "[%s] %s" % (self.time, self.price)
+        local_time = self.time.astimezone(CURRENT_TIMEZONE)
+        return "[{:{format}}] {}".format(local_time,
+                                         self.price,
+                                         format=TIME_FORMAT)
 
 
 class Tx(models.Model):
@@ -23,11 +35,13 @@ class Tx(models.Model):
     close = models.DecimalField(max_digits=12, decimal_places=0)
 
     def __unicode__(self):
-        return "[%s] %s|%s|%s|%s" % (self.time,
-                                     self.open,
-                                     self.high,
-                                     self.low,
-                                     self.close)
+        local_time = self.time.astimezone(CURRENT_TIMEZONE)
+        return "[{:{format}}] {}|{}|{}|{}".format(local_time,
+                                                  self.open,
+                                                  self.high,
+                                                  self.low,
+                                                  self.close,
+                                                  format=TIME_FORMAT)
 
 class ProductInfo(models.Model):
     symbol = models.CharField(max_length=10)
