@@ -41,6 +41,7 @@ class IndexGroup():
     symbol = None
     range_start = None
     range_end = None
+    time_format = "%Y-%m-%d %H:%M:%S"
 
     def __init__(self):
         products = ProductInfo.objects.all()
@@ -141,7 +142,6 @@ class IndexGroup():
         item_len = [len(v) for v in status_title.values()]
         min_width = max(item_len)
         # print status
-        time_format = "%Y-%m-%d %H:%M:%S"
         print "{symbol:>{width}}: {value}".format(value=self.symbol,
                                                   width=min_width,
                                                   **status_title)
@@ -153,13 +153,13 @@ class IndexGroup():
                          min_width)
 
     def _print_time(self, title, value, title_width):
-        time_format = "%Y-%m-%d %H:%M:%S"
+        self.time_format = "%Y-%m-%d %H:%M:%S"
         if value:
             print "{title:>{width}}: {value:{format}}".format(
                 title=title,
                 width=title_width,
                 value=value,
-                format=time_format)
+                format=self.time_format)
         else:
             print "{title:>{width}}: {value}".format(
                 title=title,
@@ -172,10 +172,57 @@ class IndexGroup():
 
         history = self.product.order_by('time')
         # setup filters
+        history = self._set_time_filters(history)
+        if self.symbol in ['TX']:
+            history = self._set_k_bar_filter(history, arg)
+        else:
+            history = self._set_price_filter(history, arg)
+        # show first 5 records
+        first_5 = history[:5]
+        for rec in first_5:
+            print rec
+
+    def _set_time_filters(self, history):
         if self.range_start:
             history = history.filter(Q(time__gte=self.range_start))
         if self.range_end:
             history = history.filter(Q(time__lte=self.range_end))
+        return history
+
+    def _set_k_bar_filter(self, history, arg):
+        if arg['and'] or arg['or']:
+            op1, op2 = arg['<operator>']
+            v1, v2 = arg['<value>']
+            q1 = self._make_k_bar_Q_object(op1, v1)
+            q2 = self._make_k_bar_Q_object(op2, v2)
+            assert q1 and q2, "invalid Q object"
+            if arg['and']:
+                history = history.filter(q1, q2)
+            elif arg['or']:
+                history = history.filter(q1 | q2)
+        else:
+            op = arg['<operator>'][0]
+            v = arg['<value>'][0]
+            q = self._make_k_bar_Q_object(op, v)
+            assert q, "invalid Q object"
+            history = history.filter(q)
+        return history
+
+    def _make_k_bar_Q_object(self, op, value):
+        if op == '<':
+            return Q(low__lt=value)
+        elif op == '<=':
+            return Q(low__lte=value)
+        elif op == '=':
+            return Q(high__gte=value) & Q(low__lte=value)
+        elif op == '>':
+            return Q(high__gt=value)
+        elif op == '>=':
+            return Q(high__gte=value)
+        else:
+            print "*** unknown operator: %s" % op
+
+    def _set_price_filter(self, history, arg):
         if arg['and'] or arg['or']:
             op1, op2 = arg['<operator>']
             v1, v2 = arg['<value>']
@@ -190,11 +237,7 @@ class IndexGroup():
             v = arg['<value>'][0]
             q = self._make_price_Q_object(op, v)
             history = history.filter(q)
-        # show first 5 records
-        first_5 = history[:5]
-        for rec in first_5:
-            # TODO: translate time from UTC to local
-            print rec
+        return history
 
     def _make_price_Q_object(self, op, value):
         if op == '<':
