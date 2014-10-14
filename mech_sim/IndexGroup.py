@@ -178,6 +178,9 @@ class IndexGroup():
         else:
             history = self._set_price_filter(history, arg)
         # show first 5 records
+        if history.count() == 0:
+            print "Not found!"
+            return
         first_5 = history[:5]
         for rec in first_5:
             print rec
