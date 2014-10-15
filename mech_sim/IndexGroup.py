@@ -35,7 +35,7 @@ from history.models import *
 #
 # module classes
 #
-class IndexGroup():
+class IndexGroup(object):
 
     actions = ['product', 'range', 'status', 'search', 'searchf']
     symbol = None
@@ -46,6 +46,11 @@ class IndexGroup():
     def __init__(self):
         products = ProductInfo.objects.all()
         self.symbols = [p.symbol for p in products]
+        self._first_match = None
+
+    @property
+    def first_match(self):
+        return self._first_match
 
     def complete_command(self, text, line, begin_index, end_index):
         if self.has_complete_action(line):
