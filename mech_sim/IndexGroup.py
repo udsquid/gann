@@ -174,6 +174,7 @@ class IndexGroup(object):
     def do_search(self, arg):
         if not self._check_symbol():
             return
+        self._first_match = None
 
         # filter records
         history = self.product.order_by('time')
@@ -182,11 +183,10 @@ class IndexGroup(object):
             history = self._set_k_bar_filter(history, arg)
         else:
             history = self._set_price_filter(history, arg)
-
         if history.count() == 0:
-            self._first_match = None
             print "Not found!"
             return
+
         self._first_match = history[0]
         # show first 5 records
         first_5 = history[:5]
