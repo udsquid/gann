@@ -14,7 +14,7 @@ Usage:
 #
 # python libraries
 #
-import datetime
+from datetime import time, timedelta
 
 
 #
@@ -85,7 +85,7 @@ class IndexGroup(object):
         elif arg['search']:
             self.do_search(arg)
         elif arg['searchf']:
-            print 'do searchf...'
+            self.do_searchf(arg)
         else:
             print "*** not supported"
 
@@ -127,7 +127,7 @@ class IndexGroup(object):
         date_ = arg['<date>']
         time_ = arg['<time>']
         if time_ == None:
-            time_ = datetime.time.min
+            time_ = time.min
         datetime_str = '{} {}'.format(date_, time_)
         naive_datetime = parse_datetime(datetime_str)
         if not naive_datetime:
@@ -267,6 +267,29 @@ class IndexGroup(object):
     def do_searchf(self, arg):
         if not self._check_symbol():
             return
+        self._first_match = None
+
+        # filter records
+        history = self.product.order_by('time')
+        history = self._set_time_filters(history)
+        if self.symbol in ['TX']:
+            history = self._set_k_bar_filter(history, arg)
+        else:
+            history = self._set_price_filter(history, arg)
+        if history.count() == 0:
+            print "Not found!"
+            return
+
+        self._first_match = history[0]
+        # push forward the range start
+        _1_sec = timedelta(0, 1)
+        new_start = self._first_match.time + _1_sec
+        curr_tz = timezone.get_current_timezone()
+        self.range_start = new_start.astimezone(curr_tz)
+        # show first 5 records
+        first_5 = history[:5]
+        for rec in first_5:
+            print rec
 
     def _check_symbol(self):
         if self.symbol:
