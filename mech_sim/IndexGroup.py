@@ -126,7 +126,7 @@ class IndexGroup(object):
     def _parse_datetime_arg(self, arg):
         date_ = arg['<date>']
         time_ = arg['<time>']
-        if time_ == None:
+        if time_ is None:
             time_ = time.min
         datetime_str = '{} {}'.format(date_, time_)
         naive_datetime = parse_datetime(datetime_str)
