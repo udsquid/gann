@@ -14,7 +14,7 @@ Usage:
 #
 # python libraries
 #
-from datetime import time, timedelta
+from datetime import datetime, time, timedelta
 
 
 #
@@ -46,6 +46,8 @@ class IndexGroup(object):
     def __init__(self):
         products = ProductInfo.objects.all()
         self.symbols = [p.symbol for p in products]
+        self._range_start2 = None
+        self._range_end2 = None
         self._first_match = None
 
     @property
@@ -114,6 +116,25 @@ class IndexGroup(object):
     def reset_range(self):
         self.range_start = None
         self.range_end = None
+
+    @property
+    def range_start2(self):
+        return self._range_start2
+
+    @range_start2.setter
+    def range_start2(self, value):
+        if isinstance(value, (str, unicode)):
+            naive_datetime = parse_datetime(value)
+            if not naive_datetime:
+                raise ValueError("*** invalid date-time format")
+            self._range_start2 = self._localize_datetime(naive_datetime)
+        elif isinstance(value, datetime):
+            curr_tz = timezone.get_current_timezone_name()
+            self._range_start2 = value.astimezone(curr_tz)
+
+    def _localize_datetime(self, naive):
+        curr_tz = timezone.get_current_timezone_name()
+        return pytz.timezone(curr_tz).localize(naive)
 
     def _check_range(self):
         start = self.range_start
