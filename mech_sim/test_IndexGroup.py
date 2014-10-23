@@ -42,6 +42,12 @@ class TestIndexGroup(unittest.TestCase):
         expected = self._parse_datetime(datetime_str)
         self.assertEqual(self.index_group.range_start2, expected)
 
+    def test_set_range_start2_by_obj(self):
+        datetime_obj = datetime(2000, 1, 1, 0, 0, tzinfo=timezone.utc)
+        self.index_group.range_start2 = datetime_obj
+        expected = self._parse_datetime('2000-01-01 08:00:00')
+        self.assertEqual(self.index_group.range_start2, expected)
+
     def test_set_invalid_range_format(self):
         datetime_str = '2014/10/22 01:07:43'
         self.assertRaises(ValueError,
