@@ -129,7 +129,7 @@ class IndexGroup(object):
                 raise ValueError("*** invalid date-time format")
             self._range_start2 = self._localize_datetime(naive_datetime)
         elif isinstance(value, datetime):
-            curr_tz = timezone.get_current_timezone_name()
+            curr_tz = timezone.get_current_timezone()
             self._range_start2 = value.astimezone(curr_tz)
 
     def _localize_datetime(self, naive):
