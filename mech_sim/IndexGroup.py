@@ -123,7 +123,9 @@ class IndexGroup(object):
 
     @range_start2.setter
     def range_start2(self, value):
-        if isinstance(value, (str, unicode)):
+        if value is None:
+            self.range_start2 = None
+        elif isinstance(value, (str, unicode)):
             naive_datetime = parse_datetime(value)
             if not naive_datetime:
                 raise ValueError("*** invalid date-time format")
