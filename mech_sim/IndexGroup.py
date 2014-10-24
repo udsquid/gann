@@ -134,6 +134,23 @@ class IndexGroup(object):
             curr_tz = timezone.get_current_timezone()
             self._range_start2 = value.astimezone(curr_tz)
 
+    @property
+    def range_end2(self):
+        return self._range_end2
+
+    @range_end2.setter
+    def range_end2(self, value):
+        if value is None:
+            self.range_end2 = None
+        elif isinstance(value, (str, unicode)):
+            naive_datetime = parse_datetime(value)
+            if not naive_datetime:
+                raise ValueError("*** invalid date-time format")
+            self._range_end2 = self._localize_datetime(naive_datetime)
+        elif isinstance(value, datetime):
+            curr_tz = timezone.get_current_timezone()
+            self._range_end2 = value.astimezone(curr_tz)
+
     def _localize_datetime(self, naive):
         curr_tz = timezone.get_current_timezone_name()
         return pytz.timezone(curr_tz).localize(naive)
