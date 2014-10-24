@@ -53,6 +53,9 @@ class TestIndexGroup(unittest.TestCase):
         self.assertRaises(ValueError,
                           self.index_group.range_start2,
                           datetime_str)
+        self.assertRaises(ValueError,
+                          self.index_group.range_end2,
+                          datetime_str)
 
     def test_set_range_end2_by_str(self):
         datetime_str = '2014-10-22 01:07:43'
