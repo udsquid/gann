@@ -151,6 +151,16 @@ class IndexGroup(object):
             curr_tz = timezone.get_current_timezone()
             self._range_end2 = value.astimezone(curr_tz)
 
+    def check_range(self):
+        start = self.range_start2
+        end = self.range_end2
+        if not start or not end:
+            return True
+        elif start < end:
+            return True
+        else:
+            return False
+
     def _localize_datetime(self, naive):
         curr_tz = timezone.get_current_timezone_name()
         return pytz.timezone(curr_tz).localize(naive)
