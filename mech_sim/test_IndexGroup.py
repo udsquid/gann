@@ -70,6 +70,30 @@ class TestIndexGroup(unittest.TestCase):
         self.assertEqual(self.index_group.range_end2, expected)
 
 
+    def test_check_range(self):
+        # test both end are empty
+        result = self.index_group.check_range()
+        self.assertTrue(result)
+        # test no start
+        self.index_group.range_end2 = '2107-06-10 12:00:00'
+        result = self.index_group.check_range()
+        self.assertTrue(result)
+        # test no end
+        self.index_group.range_start2 = '2007-06-10 12:00:00'
+        result = self.index_group.check_range()
+        self.assertTrue(result)
+        # test good range
+        self.index_group.range_start2 = '2007-06-10 12:00:00'
+        self.index_group.range_end2 = '2207-06-10 23:59:59'
+        result = self.index_group.check_range()
+        self.assertTrue(result)
+        # test bad range
+        self.index_group.range_start2 = '2007-06-10 12:00:00'
+        self.index_group.range_end2 = '2007-06-10 11:59:59'
+        result = self.index_group.check_range()
+        self.assertFalse(result)
+
+
 #
 # main procedure
 #
