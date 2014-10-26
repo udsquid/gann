@@ -69,6 +69,12 @@ class TestIndexGroup(unittest.TestCase):
                           self.index_group.range_end2,
                           datetime_str)
 
+    def test_set_range_end2_by_date_only(self):
+        date_str = '2000-1-1'
+        self.index_group.range_end2 = date_str
+        expected = self._parse_date(date_str)
+        self.assertEqual(self.index_group.range_end2, expected)
+
     def test_set_range_end2_by_str(self):
         datetime_str = '2014-10-22 01:07:43'
         self.index_group.range_end2 = datetime_str
