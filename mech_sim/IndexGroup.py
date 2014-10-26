@@ -22,7 +22,8 @@ from datetime import datetime, time, timedelta
 #
 from django.db.models import Q
 from django.utils import timezone
-from django.utils.dateparse import parse_datetime
+from django.utils.dateparse import date_re, datetime_re
+from django.utils.dateparse import parse_date, parse_datetime
 import pytz
 
 
@@ -126,13 +127,12 @@ class IndexGroup(object):
         if value is None:
             self.range_start2 = None
         elif isinstance(value, (str, unicode)):
-            naive_datetime = parse_datetime(value)
+            naive_datetime = self._parse_datetime(value)
             if not naive_datetime:
                 raise ValueError("*** invalid date-time format")
-            self._range_start2 = self._localize_datetime(naive_datetime)
+            self._range_start2 = self._to_aware(naive_datetime)
         elif isinstance(value, datetime):
-            curr_tz = timezone.get_current_timezone()
-            self._range_start2 = value.astimezone(curr_tz)
+            self._range_start2 = self._to_local(value)
 
     @property
     def range_end2(self):
@@ -146,7 +146,7 @@ class IndexGroup(object):
             naive_datetime = parse_datetime(value)
             if not naive_datetime:
                 raise ValueError("*** invalid date-time format")
-            self._range_end2 = self._localize_datetime(naive_datetime)
+            self._range_end2 = self._to_aware(naive_datetime)
         elif isinstance(value, datetime):
             curr_tz = timezone.get_current_timezone()
             self._range_end2 = value.astimezone(curr_tz)
@@ -161,9 +161,22 @@ class IndexGroup(object):
         else:
             return False
 
-    def _localize_datetime(self, naive):
+    def _parse_datetime(self, value):
+        if date_re.match(value):
+            date_obj = parse_date(value)
+            return datetime.combine(date_obj, time.min)
+        elif datetime_re.match(value):
+            return parse_datetime(value)
+        else:
+            return None
+
+    def _to_aware(self, naive):
         curr_tz = timezone.get_current_timezone_name()
         return pytz.timezone(curr_tz).localize(naive)
+
+    def _to_local(self, datetime_obj):
+        curr_tz = timezone.get_current_timezone()
+        return datetime_obj.astimezone(curr_tz)
 
     def _check_range(self):
         start = self.range_start
@@ -220,6 +233,15 @@ class IndexGroup(object):
                 title=title,
                 width=title_width,
                 value=None)
+
+    # def filter_history(self, arg):
+    #     history = self.product.order_by('time')
+    #     history = self._set_time_filters(history)
+    #     if self.symbol in ['TX']:
+    #         history = self._set_k_bar_filter(history, arg)
+    #     else:
+    #         history = self._set_price_filter(history, arg)
+    #     return history
 
     def do_search(self, arg):
         if not self._check_symbol():
