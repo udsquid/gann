@@ -143,13 +143,12 @@ class IndexGroup(object):
         if value is None:
             self.range_end2 = None
         elif isinstance(value, (str, unicode)):
-            naive_datetime = parse_datetime(value)
+            naive_datetime = self._parse_datetime(value)
             if not naive_datetime:
                 raise ValueError("*** invalid date-time format")
             self._range_end2 = self._to_aware(naive_datetime)
         elif isinstance(value, datetime):
-            curr_tz = timezone.get_current_timezone()
-            self._range_end2 = value.astimezone(curr_tz)
+            self._range_end2 = self._to_local(value)
 
     def check_range(self):
         start = self.range_start2
