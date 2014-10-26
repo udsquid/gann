@@ -75,13 +75,13 @@ class TestIndexGroup(unittest.TestCase):
         expected = self._parse_date(date_str)
         self.assertEqual(self.index_group.range_end2, expected)
 
-    def test_set_range_end2_by_str(self):
+    def test_set_range_end2_by_date_and_time(self):
         datetime_str = '2014-10-22 01:07:43'
         self.index_group.range_end2 = datetime_str
         expected = self._parse_datetime(datetime_str)
         self.assertEqual(self.index_group.range_end2, expected)
 
-    def test_set_range_end2_by_obj(self):
+    def test_set_range_end2_by_datetime_obj(self):
         datetime_obj = datetime(2000, 1, 1, 0, 0, tzinfo=timezone.utc)
         self.index_group.range_end2 = datetime_obj
         expected = self._parse_datetime('2000-01-01 08:00:00')
