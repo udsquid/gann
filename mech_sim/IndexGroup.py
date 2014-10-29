@@ -233,14 +233,14 @@ class IndexGroup(object):
                 width=title_width,
                 value=None)
 
-    # def filter_history(self, arg):
-    #     history = self.product.order_by('time')
-    #     history = self._set_time_filters(history)
-    #     if self.symbol in ['TX']:
-    #         history = self._set_k_bar_filter(history, arg)
-    #     else:
-    #         history = self._set_price_filter(history, arg)
-    #     return history
+    def filter_history(self, arg):
+        history = self.product.order_by('time')
+        history = self._set_time_filters(history)
+        if self.symbol in ['TX']:
+            history = self._set_k_bar_filter(history, arg)
+        else:
+            history = self._set_price_filter(history, arg)
+        return history
 
     def do_search(self, arg):
         if not self._check_symbol():
