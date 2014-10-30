@@ -135,6 +135,29 @@ class TestIndexGroup(unittest.TestCase):
         self.assertEqual(exp_time, match.time)
         self.assertEqual(exp_price, match.price)
 
+    def test_filter_taiex_by_two_ops(self):
+        self.index_group.set_product('TAIEX')
+        # search greater than upper
+        self.index_group.range_start2 = '2004-2-10'
+        self.index_group.range_start = self.index_group.range_start2
+        cmd = 'index search > 7000 or < 6000'.split()[1:]
+        opt = docopt(IndexGroup.__doc__, cmd)
+        match = self.index_group.filter_history(opt)[0]
+        exp_time = self._parse_datetime('2004-03-03 09:05:00')
+        exp_price = Decimal('7003.88')
+        self.assertEqual(exp_time, match.time)
+        self.assertEqual(exp_price, match.price)
+        # search less than lower
+        self.index_group.range_start2 = '2004-3-9'
+        self.index_group.range_start = self.index_group.range_start2
+        cmd = 'index search > 7000 or < 6000'.split()[1:]
+        opt = docopt(IndexGroup.__doc__, cmd)
+        match = self.index_group.filter_history(opt)[0]
+        exp_time = self._parse_datetime('2004-05-03 09:14:00')
+        exp_price = Decimal('5994.07')
+        self.assertEqual(exp_time, match.time)
+        self.assertEqual(exp_price, match.price)
+
 
 #
 # main procedure
