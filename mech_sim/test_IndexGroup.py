@@ -111,7 +111,7 @@ class TestIndexGroup(unittest.TestCase):
         result = self.index_group.check_range()
         self.assertFalse(result)
 
-    def test_filter_taiex_by_single_op_1(self):
+    def test_filter_taiex_by_upper_limit(self):
         self.index_group.set_product('TAIEX')
         self.index_group.range_start2 = '2000-2-18'
         self.index_group.range_start = self.index_group.range_start2
@@ -123,7 +123,7 @@ class TestIndexGroup(unittest.TestCase):
         self.assertEqual(exp_time, match.time)
         self.assertEqual(exp_price, match.price)
 
-    def test_filter_taiex_by_single_op_2(self):
+    def test_filter_taiex_by_lower_limit(self):
         self.index_group.set_product('TAIEX')
         self.index_group.range_start2 = '2001-2-21'
         self.index_group.range_start = self.index_group.range_start2
@@ -135,7 +135,7 @@ class TestIndexGroup(unittest.TestCase):
         self.assertEqual(exp_time, match.time)
         self.assertEqual(exp_price, match.price)
 
-    def test_filter_taiex_by_two_ops(self):
+    def test_filter_taiex_by_fall_within_range(self):
         self.index_group.set_product('TAIEX')
         # search greater than upper
         self.index_group.range_start2 = '2004-2-10'
