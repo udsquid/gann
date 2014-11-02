@@ -181,6 +181,30 @@ class TestIndexGroup(unittest.TestCase):
         self.assertEqual(exp_time, match.time)
         self.assertEqual(exp_price, match.price)
 
+    def test_filter_tx_by_upper_limit(self):
+        self.index_group.set_product('TX')
+        self.index_group.range_start2 = '2000-1-1'
+        self.index_group.range_start = self.index_group.range_start2
+        cmd = 'index search > 10000'.split()[1:]
+        opt = docopt(IndexGroup.__doc__, cmd)
+        match = self.index_group.filter_history(opt)[0]
+        exp_time = self._parse_datetime('2000-02-01 11:45:00')
+        exp_price = Decimal('10010')
+        self.assertEqual(exp_time, match.time)
+        self.assertEqual(exp_price, match.high)
+
+    def test_filter_tx_by_lower_limit(self):
+        self.index_group.set_product('TX')
+        self.index_group.range_start2 = '2002-4-17'
+        self.index_group.range_start = self.index_group.range_start2
+        cmd = 'index search < 5000'.split()[1:]
+        opt = docopt(IndexGroup.__doc__, cmd)
+        match = self.index_group.filter_history(opt)[0]
+        exp_time = self._parse_datetime('2002-07-01 09:20:00')
+        exp_price = Decimal('4988')
+        self.assertEqual(exp_time, match.time)
+        self.assertEqual(exp_price, match.low)
+
 
 #
 # main procedure
