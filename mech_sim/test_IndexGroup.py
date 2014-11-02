@@ -205,6 +205,52 @@ class TestIndexGroup(unittest.TestCase):
         self.assertEqual(exp_time, match.time)
         self.assertEqual(exp_price, match.low)
 
+    def test_filter_tx_by_break_through_range(self):
+        self.index_group.set_product('TX')
+        # search greater than upper
+        self.index_group.range_start2 = '2003-1-24'
+        self.index_group.range_start = self.index_group.range_start2
+        cmd = 'index search > 5200 or < 4200'.split()[1:]
+        opt = docopt(IndexGroup.__doc__, cmd)
+        match = self.index_group.filter_history(opt)[0]
+        exp_time = self._parse_datetime('2003-04-28 08:50:00')
+        exp_price = Decimal('4165')
+        self.assertEqual(exp_time, match.time)
+        self.assertEqual(exp_price, match.low)
+        # search less than lower
+        self.index_group.range_start2 = '2003-5-23'
+        self.index_group.range_start = self.index_group.range_start2
+        cmd = 'index search > 5200 or < 4200'.split()[1:]
+        opt = docopt(IndexGroup.__doc__, cmd)
+        match = self.index_group.filter_history(opt)[0]
+        exp_time = self._parse_datetime('2003-07-03 08:50:00')
+        exp_price = Decimal('5205')
+        self.assertEqual(exp_time, match.time)
+        self.assertEqual(exp_price, match.high)
+
+    def test_filter_tx_by_fall_within_range(self):
+        self.index_group.set_product('TX')
+        # search greater than upper
+        self.index_group.range_start2 = '2006-3-23'
+        self.index_group.range_start = self.index_group.range_start2
+        cmd = 'index search <= 7800 and >= 6800'.split()[1:]
+        opt = docopt(IndexGroup.__doc__, cmd)
+        match = self.index_group.filter_history(opt)[0]
+        exp_time = self._parse_datetime('2006-04-10 10:55:00')
+        exp_price = Decimal('6800')
+        self.assertEqual(exp_time, match.time)
+        self.assertEqual(exp_price, match.high)
+        # search less than lower
+        self.index_group.range_start2 = '2007-1-3'
+        self.index_group.range_start = self.index_group.range_start2
+        cmd = 'index search <= 7800 and >= 6800'.split()[1:]
+        opt = docopt(IndexGroup.__doc__, cmd)
+        match = self.index_group.filter_history(opt)[0]
+        exp_time = self._parse_datetime('2007-01-08 08:50:00')
+        exp_price = Decimal('7778')
+        self.assertEqual(exp_time, match.time)
+        self.assertEqual(exp_price, match.low)
+
 
 #
 # main procedure
