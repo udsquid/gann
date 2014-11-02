@@ -113,18 +113,6 @@ class TestIndexGroup(unittest.TestCase):
 
     def test_filter_taiex_by_upper_limit(self):
         self.index_group.set_product('TAIEX')
-        self.index_group.range_start2 = '2000-2-18'
-        self.index_group.range_start = self.index_group.range_start2
-        cmd = 'index search < 8500'.split()[1:]
-        opt = docopt(IndexGroup.__doc__, cmd)
-        match = self.index_group.filter_history(opt)[0]
-        exp_time = self._parse_datetime('2000-03-16 09:01:00')
-        exp_price = Decimal('8472.54')
-        self.assertEqual(exp_time, match.time)
-        self.assertEqual(exp_price, match.price)
-
-    def test_filter_taiex_by_lower_limit(self):
-        self.index_group.set_product('TAIEX')
         self.index_group.range_start2 = '2001-2-21'
         self.index_group.range_start = self.index_group.range_start2
         cmd = 'index search > 6500'.split()[1:]
@@ -132,6 +120,18 @@ class TestIndexGroup(unittest.TestCase):
         match = self.index_group.filter_history(opt)[0]
         exp_time = self._parse_datetime('2004-02-10 12:01:00')
         exp_price = Decimal('6501.84')
+        self.assertEqual(exp_time, match.time)
+        self.assertEqual(exp_price, match.price)
+
+    def test_filter_taiex_by_lower_limit(self):
+        self.index_group.set_product('TAIEX')
+        self.index_group.range_start2 = '2000-2-18'
+        self.index_group.range_start = self.index_group.range_start2
+        cmd = 'index search < 8500'.split()[1:]
+        opt = docopt(IndexGroup.__doc__, cmd)
+        match = self.index_group.filter_history(opt)[0]
+        exp_time = self._parse_datetime('2000-03-16 09:01:00')
+        exp_price = Decimal('8472.54')
         self.assertEqual(exp_time, match.time)
         self.assertEqual(exp_price, match.price)
 
