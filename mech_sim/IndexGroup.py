@@ -245,19 +245,12 @@ class IndexGroup(object):
     def do_search(self, arg):
         if not self._check_symbol():
             return
-        self._first_match = None
 
-        # filter records
-        history = self.product.order_by('time')
-        history = self._set_time_filters(history)
-        if self.symbol in ['TX']:
-            history = self._set_k_bar_filter(history, arg)
-        else:
-            history = self._set_price_filter(history, arg)
+        self._first_match = None
+        history = self.filter_history(arg)
         if history.count() == 0:
             print "Not found!"
             return
-
         self._first_match = history[0]
         # show first 5 records
         first_5 = history[:5]
@@ -338,19 +331,12 @@ class IndexGroup(object):
     def do_searchf(self, arg):
         if not self._check_symbol():
             return
-        self._first_match = None
 
-        # filter records
-        history = self.product.order_by('time')
-        history = self._set_time_filters(history)
-        if self.symbol in ['TX']:
-            history = self._set_k_bar_filter(history, arg)
-        else:
-            history = self._set_price_filter(history, arg)
+        self._first_match = None
+        history = self.filter_history(arg)
         if history.count() == 0:
             print "Not found!"
             return
-
         self._first_match = history[0]
         # push forward the range start
         _1_sec = timedelta(0, 1)
