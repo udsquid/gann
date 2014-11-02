@@ -40,9 +40,6 @@ class IndexGroup(object):
 
     actions = ['product', 'range', 'status', 'search', 'searchf']
     symbol = None
-    range_start = None
-    range_end = None
-    time_format = "%Y-%m-%d %H:%M:%S"
 
     def __init__(self):
         products = ProductInfo.objects.all()
@@ -104,19 +101,30 @@ class IndexGroup(object):
             self.product = Tx.objects
 
     def set_range(self, arg):
-        time_ = self._parse_datetime_arg(arg)
-        if not time_:
-            print "*** invalid date-time format"
-            return
+        assert arg['<date>'], "no date specified"
+        datetime_str = arg['<date>']
+        if arg['<time>']:
+            datetime_str += arg['<time>']
         if arg['start']:
-            self.range_start = time_
+            self.range_start2 = datetime_str
         elif arg['end']:
-            self.range_end = time_
-        self._check_range()
+            self.range_end2 = datetime_str
+        if not self.check_range():
+            print "!!! WARNING: empty range"
+
+    def check_range(self):
+        start = self.range_start2
+        end = self.range_end2
+        if not start or not end:
+            return True
+        elif start < end:
+            return True
+        else:
+            return False
 
     def reset_range(self):
-        self.range_start = None
-        self.range_end = None
+        self.range_start2 = None
+        self.range_end2 = None
 
     @property
     def range_start2(self):
@@ -125,7 +133,7 @@ class IndexGroup(object):
     @range_start2.setter
     def range_start2(self, value):
         if value is None:
-            self.range_start2 = None
+            self._range_start2 = None
         elif isinstance(value, (str, unicode)):
             naive_datetime = self._parse_datetime(value)
             if not naive_datetime:
@@ -141,7 +149,7 @@ class IndexGroup(object):
     @range_end2.setter
     def range_end2(self, value):
         if value is None:
-            self.range_end2 = None
+            self._range_end2 = None
         elif isinstance(value, (str, unicode)):
             naive_datetime = self._parse_datetime(value)
             if not naive_datetime:
@@ -149,16 +157,6 @@ class IndexGroup(object):
             self._range_end2 = self._to_aware(naive_datetime)
         elif isinstance(value, datetime):
             self._range_end2 = self._to_local(value)
-
-    def check_range(self):
-        start = self.range_start2
-        end = self.range_end2
-        if not start or not end:
-            return True
-        elif start < end:
-            return True
-        else:
-            return False
 
     def _parse_datetime(self, value):
         if date_re.match(value):
@@ -177,27 +175,6 @@ class IndexGroup(object):
         curr_tz = timezone.get_current_timezone()
         return datetime_obj.astimezone(curr_tz)
 
-    def _check_range(self):
-        start = self.range_start
-        end = self.range_end
-        if not start or not end:
-            return
-        if self.range_start >= self.range_end:
-            print "!!! WARNING: empty range"
-
-    def _parse_datetime_arg(self, arg):
-        date_ = arg['<date>']
-        time_ = arg['<time>']
-        if time_ is None:
-            time_ = time.min
-        datetime_str = '{} {}'.format(date_, time_)
-        naive_datetime = parse_datetime(datetime_str)
-        if not naive_datetime:
-            return None
-        curr_tz = timezone.get_current_timezone_name()
-        local_time = pytz.timezone(curr_tz).localize(naive_datetime)
-        return local_time
-
     def show_status(self):
         # calculate status title length for printing
         status_title = dict(
@@ -212,26 +189,12 @@ class IndexGroup(object):
         print "{symbol:>{width}}: {value}".format(value=self.symbol,
                                                   width=min_width,
                                                   **status_title)
-        self._print_time(status_title['start'],
-                         self.range_start,
-                         min_width)
-        self._print_time(status_title['end'],
-                         self.range_end,
-                         min_width)
-
-    def _print_time(self, title, value, title_width):
-        self.time_format = "%Y-%m-%d %H:%M:%S"
-        if value:
-            print "{title:>{width}}: {value:{format}}".format(
-                title=title,
-                width=title_width,
-                value=value,
-                format=self.time_format)
-        else:
-            print "{title:>{width}}: {value}".format(
-                title=title,
-                width=title_width,
-                value=None)
+        print "{start:>{width}}: {value}".format(value=self.range_start2,
+                                                 width=min_width,
+                                                 **status_title)
+        print "{end:>{width}}: {value}".format(value=self.range_end2,
+                                               width=min_width,
+                                               **status_title)
 
     def filter_history(self, arg):
         history = self.product.order_by('time')
@@ -258,10 +221,10 @@ class IndexGroup(object):
             print rec
 
     def _set_time_filters(self, history):
-        if self.range_start:
-            history = history.filter(Q(time__gte=self.range_start))
-        if self.range_end:
-            history = history.filter(Q(time__lte=self.range_end))
+        if self.range_start2:
+            history = history.filter(Q(time__gte=self.range_start2))
+        if self.range_end2:
+            history = history.filter(Q(time__lte=self.range_end2))
         return history
 
     def _set_k_bar_filter(self, history, arg):
@@ -341,8 +304,7 @@ class IndexGroup(object):
         # push forward the range start
         _1_sec = timedelta(0, 1)
         new_start = self._first_match.time + _1_sec
-        curr_tz = timezone.get_current_timezone()
-        self.range_start = new_start.astimezone(curr_tz)
+        self.range_start2 = new_start
         # show first 5 records
         first_5 = history[:5]
         for rec in first_5:
