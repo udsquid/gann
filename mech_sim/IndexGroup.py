@@ -44,8 +44,8 @@ class IndexGroup(object):
     def __init__(self):
         products = ProductInfo.objects.all()
         self.symbols = [p.symbol for p in products]
-        self._range_start2 = None
-        self._range_end2 = None
+        self._range_start = None
+        self._range_end = None
         self._first_match = None
 
     @property
@@ -106,15 +106,15 @@ class IndexGroup(object):
         if arg['<time>']:
             datetime_str += arg['<time>']
         if arg['start']:
-            self.range_start2 = datetime_str
+            self.range_start = datetime_str
         elif arg['end']:
-            self.range_end2 = datetime_str
+            self.range_end = datetime_str
         if not self.check_range():
             print "!!! WARNING: empty range"
 
     def check_range(self):
-        start = self.range_start2
-        end = self.range_end2
+        start = self.range_start
+        end = self.range_end
         if not start or not end:
             return True
         elif start < end:
@@ -123,40 +123,40 @@ class IndexGroup(object):
             return False
 
     def reset_range(self):
-        self.range_start2 = None
-        self.range_end2 = None
+        self.range_start = None
+        self.range_end = None
 
     @property
-    def range_start2(self):
-        return self._range_start2
+    def range_start(self):
+        return self._range_start
 
-    @range_start2.setter
-    def range_start2(self, value):
+    @range_start.setter
+    def range_start(self, value):
         if value is None:
-            self._range_start2 = None
+            self._range_start = None
         elif isinstance(value, (str, unicode)):
             naive_datetime = self._parse_datetime(value)
             if not naive_datetime:
                 raise ValueError("*** invalid date-time format")
-            self._range_start2 = self._to_aware(naive_datetime)
+            self._range_start = self._to_aware(naive_datetime)
         elif isinstance(value, datetime):
-            self._range_start2 = self._to_local(value)
+            self._range_start = self._to_local(value)
 
     @property
-    def range_end2(self):
-        return self._range_end2
+    def range_end(self):
+        return self._range_end
 
-    @range_end2.setter
-    def range_end2(self, value):
+    @range_end.setter
+    def range_end(self, value):
         if value is None:
-            self._range_end2 = None
+            self._range_end = None
         elif isinstance(value, (str, unicode)):
             naive_datetime = self._parse_datetime(value)
             if not naive_datetime:
                 raise ValueError("*** invalid date-time format")
-            self._range_end2 = self._to_aware(naive_datetime)
+            self._range_end = self._to_aware(naive_datetime)
         elif isinstance(value, datetime):
-            self._range_end2 = self._to_local(value)
+            self._range_end = self._to_local(value)
 
     def _parse_datetime(self, value):
         if date_re.match(value):
@@ -189,10 +189,10 @@ class IndexGroup(object):
         print "{symbol:>{width}}: {value}".format(value=self.symbol,
                                                   width=min_width,
                                                   **status_title)
-        print "{start:>{width}}: {value}".format(value=self.range_start2,
+        print "{start:>{width}}: {value}".format(value=self.range_start,
                                                  width=min_width,
                                                  **status_title)
-        print "{end:>{width}}: {value}".format(value=self.range_end2,
+        print "{end:>{width}}: {value}".format(value=self.range_end,
                                                width=min_width,
                                                **status_title)
 
@@ -221,10 +221,10 @@ class IndexGroup(object):
             print rec
 
     def _set_time_filters(self, history):
-        if self.range_start2:
-            history = history.filter(Q(time__gte=self.range_start2))
-        if self.range_end2:
-            history = history.filter(Q(time__lte=self.range_end2))
+        if self.range_start:
+            history = history.filter(Q(time__gte=self.range_start))
+        if self.range_end:
+            history = history.filter(Q(time__lte=self.range_end))
         return history
 
     def _set_k_bar_filter(self, history, arg):
@@ -304,7 +304,7 @@ class IndexGroup(object):
         # push forward the range start
         _1_sec = timedelta(0, 1)
         new_start = self._first_match.time + _1_sec
-        self.range_start2 = new_start
+        self.range_start = new_start
         # show first 5 records
         first_5 = history[:5]
         for rec in first_5:
