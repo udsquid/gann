@@ -40,8 +40,8 @@ class TestIndexGroup(unittest.TestCase):
 
     def test_range_reset(self):
         self.index_group.reset_range()
-        self.assertIsNone(self.index_group.range_start)
-        self.assertIsNone(self.index_group.range_end)
+        self.assertIsNone(self.index_group.range_start2)
+        self.assertIsNone(self.index_group.range_end2)
 
     def test_set_range_start2_by_date_only(self):
         date_str = '2000-1-1'
@@ -114,7 +114,6 @@ class TestIndexGroup(unittest.TestCase):
     def test_filter_taiex_by_upper_limit(self):
         self.index_group.set_product('TAIEX')
         self.index_group.range_start2 = '2001-2-21'
-        self.index_group.range_start = self.index_group.range_start2
         cmd = 'index search > 6500'.split()[1:]
         opt = docopt(IndexGroup.__doc__, cmd)
         match = self.index_group.filter_history(opt)[0]
@@ -126,7 +125,6 @@ class TestIndexGroup(unittest.TestCase):
     def test_filter_taiex_by_lower_limit(self):
         self.index_group.set_product('TAIEX')
         self.index_group.range_start2 = '2000-2-18'
-        self.index_group.range_start = self.index_group.range_start2
         cmd = 'index search < 8500'.split()[1:]
         opt = docopt(IndexGroup.__doc__, cmd)
         match = self.index_group.filter_history(opt)[0]
@@ -139,7 +137,6 @@ class TestIndexGroup(unittest.TestCase):
         self.index_group.set_product('TAIEX')
         # search greater than upper
         self.index_group.range_start2 = '2004-2-10'
-        self.index_group.range_start = self.index_group.range_start2
         cmd = 'index search > 7000 or < 6000'.split()[1:]
         opt = docopt(IndexGroup.__doc__, cmd)
         match = self.index_group.filter_history(opt)[0]
@@ -149,7 +146,6 @@ class TestIndexGroup(unittest.TestCase):
         self.assertEqual(exp_price, match.price)
         # search less than lower
         self.index_group.range_start2 = '2004-3-9'
-        self.index_group.range_start = self.index_group.range_start2
         cmd = 'index search > 7000 or < 6000'.split()[1:]
         opt = docopt(IndexGroup.__doc__, cmd)
         match = self.index_group.filter_history(opt)[0]
@@ -162,7 +158,6 @@ class TestIndexGroup(unittest.TestCase):
         self.index_group.set_product('TAIEX')
         # search greater than upper
         self.index_group.range_start2 = '2007-8-15'
-        self.index_group.range_start = self.index_group.range_start2
         cmd = 'index search < 8600 and > 8400'.split()[1:]
         opt = docopt(IndexGroup.__doc__, cmd)
         match = self.index_group.filter_history(opt)[0]
@@ -172,7 +167,6 @@ class TestIndexGroup(unittest.TestCase):
         self.assertEqual(exp_price, match.price)
         # search less than lower
         self.index_group.range_start2 = '2007-8-16 9:01'
-        self.index_group.range_start = self.index_group.range_start2
         cmd = 'index search < 8600 and > 8400'.split()[1:]
         opt = docopt(IndexGroup.__doc__, cmd)
         match = self.index_group.filter_history(opt)[0]
@@ -184,7 +178,6 @@ class TestIndexGroup(unittest.TestCase):
     def test_filter_tx_by_upper_limit(self):
         self.index_group.set_product('TX')
         self.index_group.range_start2 = '2000-1-1'
-        self.index_group.range_start = self.index_group.range_start2
         cmd = 'index search > 10000'.split()[1:]
         opt = docopt(IndexGroup.__doc__, cmd)
         match = self.index_group.filter_history(opt)[0]
@@ -196,7 +189,6 @@ class TestIndexGroup(unittest.TestCase):
     def test_filter_tx_by_lower_limit(self):
         self.index_group.set_product('TX')
         self.index_group.range_start2 = '2002-4-17'
-        self.index_group.range_start = self.index_group.range_start2
         cmd = 'index search < 5000'.split()[1:]
         opt = docopt(IndexGroup.__doc__, cmd)
         match = self.index_group.filter_history(opt)[0]
@@ -209,7 +201,6 @@ class TestIndexGroup(unittest.TestCase):
         self.index_group.set_product('TX')
         # search greater than upper
         self.index_group.range_start2 = '2003-1-24'
-        self.index_group.range_start = self.index_group.range_start2
         cmd = 'index search > 5200 or < 4200'.split()[1:]
         opt = docopt(IndexGroup.__doc__, cmd)
         match = self.index_group.filter_history(opt)[0]
@@ -219,7 +210,6 @@ class TestIndexGroup(unittest.TestCase):
         self.assertEqual(exp_price, match.low)
         # search less than lower
         self.index_group.range_start2 = '2003-5-23'
-        self.index_group.range_start = self.index_group.range_start2
         cmd = 'index search > 5200 or < 4200'.split()[1:]
         opt = docopt(IndexGroup.__doc__, cmd)
         match = self.index_group.filter_history(opt)[0]
@@ -232,7 +222,6 @@ class TestIndexGroup(unittest.TestCase):
         self.index_group.set_product('TX')
         # search greater than upper
         self.index_group.range_start2 = '2006-3-23'
-        self.index_group.range_start = self.index_group.range_start2
         cmd = 'index search <= 7800 and >= 6800'.split()[1:]
         opt = docopt(IndexGroup.__doc__, cmd)
         match = self.index_group.filter_history(opt)[0]
@@ -242,7 +231,6 @@ class TestIndexGroup(unittest.TestCase):
         self.assertEqual(exp_price, match.high)
         # search less than lower
         self.index_group.range_start2 = '2007-1-3'
-        self.index_group.range_start = self.index_group.range_start2
         cmd = 'index search <= 7800 and >= 6800'.split()[1:]
         opt = docopt(IndexGroup.__doc__, cmd)
         match = self.index_group.filter_history(opt)[0]
