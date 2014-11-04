@@ -102,8 +102,10 @@ class IndexGroup(object):
 
     def set_range(self, arg):
         assert arg['<date>'], "no date specified"
-        datetime_str = '{} {}'.format(arg['<date>'], arg['<time>'])
-        datetime_str = datetime_str.strip()
+        if arg['<time>']:
+            datetime_str = '{<date>} {<time>}'.format(**arg)
+        else:
+            datetime_str = arg['<date>']
         try:
             if arg['start']:
                 self.range_start = datetime_str
