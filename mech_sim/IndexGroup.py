@@ -187,33 +187,33 @@ class IndexGroup(object):
             result='Search result',
         )
         item_len = [len(v) for v in status_title.values()]
-        min_width = max(item_len)
+        width = max(item_len)
         # print status
         print "{symbol:>{width}}: {value}".format(value=self.symbol,
-                                                  width=min_width,
+                                                  width=width,
                                                   **status_title)
         range_format = '%Y-%m-%d %H:%M:%S'
         if self.range_start:
-            print "{start:>{width}}: {value}".format(
+            print "{start:>{width}}: {value:{format}}".format(
                 value=self.range_start,
-                width=min_width,
+                width=width,
                 format=range_format,
                 **status_title)
         else:
             print "{start:>{width}}: {value}".format(
                 value=self.range_start,
-                width=min_width,
+                width=width,
                 **status_title)
         if self.range_end:
-            print "{start:>{width}}: {value}".format(
+            print "{end:>{width}}: {value:{format}}".format(
                 value=self.range_end,
-                width=min_width,
+                width=width,
                 format=range_format,
                 **status_title)
         else:
             print "{end:>{width}}: {value}".format(
                 value=self.range_end,
-                width=min_width,
+                width=width,
                 **status_title)
 
     def filter_history(self, arg):
