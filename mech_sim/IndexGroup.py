@@ -31,6 +31,7 @@ import pytz
 # project libraries
 #
 from history.models import *
+from lib.exception_decorator import print_except_only
 
 
 #
@@ -100,20 +101,17 @@ class IndexGroup(object):
         elif self.symbol == 'TX':
             self.product = Tx.objects
 
+    @print_except_only
     def set_range(self, arg):
         assert arg['<date>'], "no date specified"
         if arg['<time>']:
             datetime_str = '{<date>} {<time>}'.format(**arg)
         else:
             datetime_str = arg['<date>']
-        try:
-            if arg['start']:
-                self.range_start = datetime_str
-            elif arg['end']:
-                self.range_end = datetime_str
-        except ValueError as e:
-            print e
-            return
+        if arg['start']:
+            self.range_start = datetime_str
+        elif arg['end']:
+            self.range_end = datetime_str
         if not self.check_range():
             print "!!! WARNING: empty range"
 
