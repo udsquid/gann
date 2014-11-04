@@ -189,12 +189,29 @@ class IndexGroup(object):
         print "{symbol:>{width}}: {value}".format(value=self.symbol,
                                                   width=min_width,
                                                   **status_title)
-        print "{start:>{width}}: {value}".format(value=self.range_start,
-                                                 width=min_width,
-                                                 **status_title)
-        print "{end:>{width}}: {value}".format(value=self.range_end,
-                                               width=min_width,
-                                               **status_title)
+        range_format = '%Y-%m-%d %H:%M:%S'
+        if self.range_start:
+            print "{start:>{width}}: {value}".format(
+                value=self.range_start,
+                width=min_width,
+                format=range_format,
+                **status_title)
+        else:
+            print "{start:>{width}}: {value}".format(
+                value=self.range_start,
+                width=min_width,
+                **status_title)
+        if self.range_end:
+            print "{start:>{width}}: {value}".format(
+                value=self.range_end,
+                width=min_width,
+                format=range_format,
+                **status_title)
+        else:
+            print "{end:>{width}}: {value}".format(
+                value=self.range_end,
+                width=min_width,
+                **status_title)
 
     def filter_history(self, arg):
         history = self.product.order_by('time')
