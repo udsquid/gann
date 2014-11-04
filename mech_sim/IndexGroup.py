@@ -102,13 +102,16 @@ class IndexGroup(object):
 
     def set_range(self, arg):
         assert arg['<date>'], "no date specified"
-        datetime_str = arg['<date>']
-        if arg['<time>']:
-            datetime_str += arg['<time>']
-        if arg['start']:
-            self.range_start = datetime_str
-        elif arg['end']:
-            self.range_end = datetime_str
+        datetime_str = '{} {}'.format(arg['<date>'], arg['<time>'])
+        datetime_str = datetime_str.strip()
+        try:
+            if arg['start']:
+                self.range_start = datetime_str
+            elif arg['end']:
+                self.range_end = datetime_str
+        except ValueError as e:
+            print e
+            return
         if not self.check_range():
             print "!!! WARNING: empty range"
 
