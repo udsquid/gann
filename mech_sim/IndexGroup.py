@@ -216,15 +216,7 @@ class IndexGroup(object):
                 width=width,
                 **status_title)
 
-    def filter_history(self, arg):
-        history = self.product.order_by('time')
-        history = self._set_time_filters(history)
-        if self.symbol in ['TX']:
-            history = self._set_k_bar_filter(history, arg)
-        else:
-            history = self._set_price_filter(history, arg)
-        return history
-
+    @print_except_only
     def do_search(self, arg):
         if not self._check_symbol():
             return
@@ -240,6 +232,15 @@ class IndexGroup(object):
         for rec in first_5:
             print rec
 
+    def filter_history(self, arg):
+        history = self.product.order_by('time')
+        history = self._set_time_filters(history)
+        if self.symbol in ['TX']:
+            history = self._set_k_bar_filter(history, arg)
+        else:
+            history = self._set_price_filter(history, arg)
+        return history
+
     def _set_time_filters(self, history):
         if self.range_start:
             history = history.filter(Q(time__gte=self.range_start))
@@ -253,7 +254,6 @@ class IndexGroup(object):
             v1, v2 = arg['<value>']
             q1 = self._make_k_bar_Q_object(op1, v1)
             q2 = self._make_k_bar_Q_object(op2, v2)
-            assert q1 and q2, "invalid Q object"
             if arg['and']:
                 history = history.filter(q1, q2)
             elif arg['or']:
@@ -262,7 +262,6 @@ class IndexGroup(object):
             op = arg['<operator>'][0]
             v = arg['<value>'][0]
             q = self._make_k_bar_Q_object(op, v)
-            assert q, "invalid Q object"
             history = history.filter(q)
         return history
 
@@ -278,7 +277,7 @@ class IndexGroup(object):
         elif op == '>=':
             return Q(high__gte=value)
         else:
-            print "*** unknown operator: %s" % op
+            raise ValueError("*** unknown operator: %s" % op)
 
     def _set_price_filter(self, history, arg):
         if arg['and'] or arg['or']:
@@ -309,8 +308,9 @@ class IndexGroup(object):
         elif op == '>=':
             return Q(price__gte=value)
         else:
-            print "*** unknown operator: %s" % op
+            raise ValueError("*** unknown operator: %s" % op)
 
+    @print_except_only
     def do_searchf(self, arg):
         if not self._check_symbol():
             return
