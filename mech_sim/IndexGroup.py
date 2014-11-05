@@ -189,35 +189,35 @@ class IndexGroup(object):
         item_len = [len(v) for v in status_title.values()]
         width = max(item_len)
         # print status
-        print "{symbol:>{width}}: {value}".format(value=self.symbol,
-                                                  width=width,
-                                                  **status_title)
+        print "{symbol:{width}}: {value}".format(value=self.symbol,
+                                                 width=width,
+                                                 **status_title)
         range_format = '%Y-%m-%d %H:%M:%S'
         if self.range_start:
-            print "{start:>{width}}: {value:{format}}".format(
+            print "{start:{width}}: {value:{format}}".format(
                 value=self.range_start,
                 width=width,
                 format=range_format,
                 **status_title)
         else:
-            print "{start:>{width}}: {value}".format(
+            print "{start:{width}}: {value}".format(
                 value=self.range_start,
                 width=width,
                 **status_title)
         if self.range_end:
-            print "{end:>{width}}: {value:{format}}".format(
+            print "{end:{width}}: {value:{format}}".format(
                 value=self.range_end,
                 width=width,
                 format=range_format,
                 **status_title)
         else:
-            print "{end:>{width}}: {value}".format(
+            print "{end:{width}}: {value}".format(
                 value=self.range_end,
                 width=width,
                 **status_title)
-        print "{match:>{width}}: {value}".format(value=self.first_match,
-                                                 width=width,
-                                                 **status_title)
+        print "{match:{width}}: {value}".format(value=self.first_match,
+                                                width=width,
+                                                **status_title)
 
     @print_except_only
     def do_search(self, arg):
