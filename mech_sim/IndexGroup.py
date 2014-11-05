@@ -184,7 +184,7 @@ class IndexGroup(object):
             symbol='Symbol',
             start='Range start',
             end='Range end',
-            result='Search result',
+            match='First match',
         )
         item_len = [len(v) for v in status_title.values()]
         width = max(item_len)
@@ -215,6 +215,9 @@ class IndexGroup(object):
                 value=self.range_end,
                 width=width,
                 **status_title)
+        print "{match:>{width}}: {value}".format(value=self.first_match,
+                                                 width=width,
+                                                 **status_title)
 
     @print_except_only
     def do_search(self, arg):
