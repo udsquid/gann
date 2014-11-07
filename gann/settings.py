@@ -125,6 +125,7 @@ INSTALLED_APPS = (
     'high_low',
     'history',
     'south',
+    'mech_sim.order',
 )
 
 # A sample logging configuration. The only tangible logging
