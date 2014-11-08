@@ -36,6 +36,7 @@ from docopt import docopt
 #
 from lib.docopt_decorator import docopt_cmd
 import IndexGroup as IG
+import OrderGroup as OG
 import ProductGroup as PG
 
 
@@ -51,6 +52,7 @@ class MainInteractive(cmd.Cmd):
 
     product_group = PG.ProductGroup()
     index_group = IG.IndexGroup()
+    order_group = OG.OrderGroup()
 
     def emptyline(self):
         """Override with no action to avoid repeat last command,
@@ -79,6 +81,14 @@ class MainInteractive(cmd.Cmd):
     @docopt_cmd(IG)
     def do_index(self, arg):
         self.index_group.perform(arg)
+
+    def complete_order(self, text, line, begin_index, end_index):
+        return self.order_group.complete_command(
+            text, line, begin_index, end_index)
+
+    @docopt_cmd(OG)
+    def do_order(self, arg):
+        self.order_group.perform(arg)
 
 option = docopt(__doc__, version='Mechanism Simulator 1.0')
 if option['--interactive']:
