@@ -28,7 +28,7 @@ class OrderGroup(object):
 
     @property
     def actions(self):
-        return ['list']
+        return ['strategy']
 
     @property
     def symbols(self):
@@ -54,8 +54,16 @@ class OrderGroup(object):
         return False
 
     def perform(self, arg):
-        if arg:
-            pass
+        if arg['strategy']:
+            if arg['list']:
+                self.show_strategies()
         else:
-            print "*** action not supported"
-            print arg
+            err_msg = "*** should not be here, arg: " + str(arg)
+            raise ValueError(err_msg)
+
+    def show_strategies(self):
+        strategies = Strategy.objects.order_by('created_time')
+        print 'Index | Name'
+        print '-' * 60
+        for i, s in enumerate(strategies):
+            print "{:>5} | {}".format(i+1, s.name)
