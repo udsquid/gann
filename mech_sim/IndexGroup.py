@@ -15,6 +15,7 @@ Usage:
 # python libraries
 #
 from datetime import datetime, time, timedelta
+import re
 
 
 #
@@ -32,6 +33,7 @@ import pytz
 #
 from history.models import *
 from lib.exception_decorator import print_except_only
+from auto_complete import *
 
 
 #
@@ -53,24 +55,26 @@ class IndexGroup(object):
     def first_match(self):
         return self._first_match
 
-    def complete_command(self, text, line, begin_index, end_index):
-        if self.has_complete_action(line):
-            return [text]
-        elif not text:
-            return self.actions
-        else:
-            completions = []
-            for act in self.actions:
-                if act.startswith(text):
-                    completions.append(act)
-            return completions
+    @property
+    def command_form(self):
+        return [['index', 'product', '<symbol>'],
+                ['index', 'range', ['start', 'end'], '<date>', '[<time>]'],
+                ['index', 'range', 'reset'],
+                ['index', 'status'],
+                ['index', ['search', 'searchf'], '<operator>', '<value>',
+                          ['and', 'or'], '<operator>', '<value>'],
+                ]
 
-    def has_complete_action(self, line):
-        for act in self.actions:
-            act += ' '
-            if act in line:
-                return True
-        return False
+    def complete_command(self, text, line, begin_index, end_index):
+        next_cmd = []
+        for form in self.command_form:
+            cmd = match_command(form, text, line)
+            if cmd:
+                if type(cmd) == list:
+                    next_cmd.extend(cmd)
+                else:
+                    next_cmd.append(cmd)
+        return list(set(next_cmd))
 
     def perform(self, arg):
         if arg['product']:
