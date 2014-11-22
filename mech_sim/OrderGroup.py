@@ -16,6 +16,7 @@ Usage:
 #
 from mech_sim.order.models import *
 from lib.exception_decorator import print_except_only
+from auto_complete import *
 
 
 #
@@ -34,24 +35,13 @@ class OrderGroup(object):
     def symbols(self):
         return ['TX']
 
-    def complete_command(self, text, line, begin_index, end_index):
-        if self.has_complete_action(line):
-            return [text]
-        elif not text:
-            return self.actions
-        else:
-            completions = []
-            for act in self.actions:
-                if act.startswith(text):
-                    completions.append(act)
-            return completions
+    @property
+    def command_form(self):
+        return [['order', 'strategy', 'list'],
+                ]
 
-    def has_complete_action(self, line):
-        for act in self.actions:
-            act += ' '
-            if act in line:
-                return True
-        return False
+    def complete_command(self, text, line, begin_index, end_index):
+        return complete_command(text, line, self.command_form)
 
     def perform(self, arg):
         if arg['strategy']:
