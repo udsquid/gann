@@ -22,9 +22,31 @@ to:
                 ['and', 'or'], '<operator>', '<value>'],
             ]
 
+and invoke 'match_command' method like this:
+    for form in self.command_form:
+        cmd = match_command(form, text, line)
 """
 
+#
+# python libraries
+#
 import re
+
+
+#
+# module methods
+#
+
+def complete_command(text, line, command_form):
+    next_cmd = []
+    for form in command_form:
+        cmd = match_command(form, text, line)
+        if cmd:
+            if type(cmd) == list:
+                next_cmd.extend(cmd)
+            else:
+                next_cmd.append(cmd)
+    return list(set(next_cmd))
 
 def match_command(form, text, line, level=1):
     _input = line.split()

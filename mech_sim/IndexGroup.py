@@ -66,15 +66,7 @@ class IndexGroup(object):
                 ]
 
     def complete_command(self, text, line, begin_index, end_index):
-        next_cmd = []
-        for form in self.command_form:
-            cmd = match_command(form, text, line)
-            if cmd:
-                if type(cmd) == list:
-                    next_cmd.extend(cmd)
-                else:
-                    next_cmd.append(cmd)
-        return list(set(next_cmd))
+        return complete_command(text, line, self.command_form)
 
     def perform(self, arg):
         if arg['product']:
