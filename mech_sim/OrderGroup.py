@@ -20,6 +20,7 @@ from django.db import IntegrityError
 #
 from auto_complete import *
 from lib.exception_decorator import print_except_only
+from lib.time_utils import to_local
 from mech_sim.order.models import *
 
 
@@ -84,7 +85,12 @@ class OrderGroup(object):
 
     def show_strategy_detail(self, name):
         try:
-            Strategy.objects.get(name=name)
+            s = Strategy.objects.get(name=name)
+            created_time = to_local(s.created_time)
+            _format = "%Y-%m-%d %H:%M:%S"
+            print '   Name:', s.name
+            print ' Symbol:', s.symbol
+            print 'Created:', created_time.strftime(_format)
         except ObjectDoesNotExist:
             err_msg = "*** strategy does not exist: %s" % name
             raise ValueError(err_msg)
