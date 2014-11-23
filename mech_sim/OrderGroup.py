@@ -40,14 +40,14 @@ class OrderGroup(object):
         return ['TX']
 
     @property
-    def command_form(self):
+    def command_forms(self):
         return [['order', 'strategy', 'list'],
                 ['order', 'strategy', 'new', '<name>', '<symbol>'],
                 ['order', 'strategy', 'info', '<name>'],
                 ]
 
     def complete_command(self, text, line, begin_index, end_index):
-        return complete_command(text, line, self.command_form)
+        return complete_command(text, line, self.command_forms)
 
     @print_except_only
     def perform(self, arg):
