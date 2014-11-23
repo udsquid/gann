@@ -84,13 +84,16 @@ class OrderGroup(object):
             raise ValueError(err_msg)
 
     def show_strategy_detail(self, name):
+        s = self._get_strategy(name)
+        created_time = to_local(s.created_time)
+        _format = "%Y-%m-%d %H:%M:%S"
+        print '   Name:', s.name
+        print ' Symbol:', s.symbol
+        print 'Created:', created_time.strftime(_format)
+
+    def _get_strategy(self, name):
         try:
-            s = Strategy.objects.get(name=name)
-            created_time = to_local(s.created_time)
-            _format = "%Y-%m-%d %H:%M:%S"
-            print '   Name:', s.name
-            print ' Symbol:', s.symbol
-            print 'Created:', created_time.strftime(_format)
+            return Strategy.objects.get(name=name)
         except ObjectDoesNotExist:
             err_msg = "*** strategy does not exist: %s" % name
             raise ValueError(err_msg)
