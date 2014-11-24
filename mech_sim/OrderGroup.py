@@ -6,6 +6,7 @@ Usage:
     order strategy info <name>
     order strategy new <name> <symbol>
     order strategy rename <old-name> <new-name>
+    order strategy delete <name>
 """
 
 
@@ -47,6 +48,7 @@ class OrderGroup(object):
                 ['order', 'strategy', 'info', '<name>'],
                 ['order', 'strategy', 'new', '<name>', '<symbol>'],
                 ['order', 'strategy', 'rename', '<old-name>', '<new-name>'],
+                ['order', 'strategy', 'delete', '<name>'],
                 ]
 
     def complete_command(self, text, line, begin_index, end_index):
@@ -63,6 +65,8 @@ class OrderGroup(object):
                 self.create_strategy_entry(arg['<name>'], arg['<symbol>'])
             elif arg['rename']:
                 self.rename_strategy(arg['<old-name>'], arg['<new-name>'])
+            elif arg['delete']:
+                self.delete_strategy(arg['<name>'])
         else:
             err_msg = "*** should not be here, arg: " + str(arg)
             raise ValueError(err_msg)
@@ -106,3 +110,7 @@ class OrderGroup(object):
         s = self._get_strategy(old_name)
         s.name = new_name
         s.save()
+
+    def delete_strategy(self, name):
+        s = self._get_strategy(name)
+        s.delete()
