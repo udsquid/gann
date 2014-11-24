@@ -35,10 +35,6 @@ class OrderGroup(object):
         pass
 
     @property
-    def actions(self):
-        return ['strategy']
-
-    @property
     def symbols(self):
         return ['TX']
 
