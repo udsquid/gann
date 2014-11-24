@@ -5,6 +5,7 @@ Usage:
     order strategy list
     order strategy info <name>
     order strategy new <name> <symbol>
+    order strategy load <name>
     order strategy rename <old-name> <new-name>
     order strategy delete <name>
 """
@@ -31,18 +32,26 @@ from mech_sim.order.models import *
 #
 class OrderGroup(object):
 
-    def __init__(self):
-        pass
+    _strategy = None
 
     @property
     def symbols(self):
         return ['TX']
 
     @property
+    def strategy(self):
+        return self._strategy
+
+    @strategy.setter
+    def strategy(self, value):
+        self._strategy = value
+
+    @property
     def command_forms(self):
         return [['order', 'strategy', 'list'],
                 ['order', 'strategy', 'info', '<name>'],
                 ['order', 'strategy', 'new', '<name>', '<symbol>'],
+                ['order', 'strategy', 'load', '<name>'],
                 ['order', 'strategy', 'rename', '<old-name>', '<new-name>'],
                 ['order', 'strategy', 'delete', '<name>'],
                 ]
@@ -59,6 +68,8 @@ class OrderGroup(object):
                 self.show_strategy_detail(arg['<name>'])
             elif arg['new']:
                 self.create_strategy_entry(arg['<name>'], arg['<symbol>'])
+            elif arg['load']:
+                self.load_strategy(arg['<name>'])
             elif arg['rename']:
                 self.rename_strategy(arg['<old-name>'], arg['<new-name>'])
             elif arg['delete']:
@@ -101,6 +112,10 @@ class OrderGroup(object):
                 raise e
             err_msg = "*** duplicate name: %s" % name
             raise ValueError(err_msg)
+
+    def load_strategy(self, name):
+        s = self._get_strategy(name)
+        self.strategy = s.name
 
     def rename_strategy(self, old_name, new_name):
         s = self._get_strategy(old_name)
