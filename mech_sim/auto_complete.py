@@ -48,6 +48,7 @@ def complete_command(text, line, command_form):
                 next_cmd.append(cmd)
     return list(set(next_cmd))
 
+
 def match_command(form, text, line, level=1):
     _input = line.split()
     if len(form) < len(_input):
@@ -69,6 +70,7 @@ def match_command(form, text, line, level=1):
             return None
         return match_command(form, text, line, level+1)
 
+
 def match_token(form_token, input_token):
     if type(form_token) == list:
         return input_token in form_token
@@ -76,6 +78,7 @@ def match_token(form_token, input_token):
         return True
     else:
         return input_token == form_token
+
 
 def complete_token(form_token, input_token):
     if type(form_token) == list:
