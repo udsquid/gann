@@ -33,6 +33,7 @@ from mech_sim.order.models import *
 class OrderGroup(object):
 
     _strategy = None
+    _method = None
 
     @property
     def symbols(self):
@@ -45,6 +46,14 @@ class OrderGroup(object):
     @strategy.setter
     def strategy(self, value):
         self._strategy = value
+
+    @property
+    def method(self):
+        return self._method
+
+    @method.setter
+    def method(self, value):
+        self._method = value
 
     @property
     def command_forms(self):
