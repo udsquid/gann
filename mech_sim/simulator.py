@@ -88,6 +88,8 @@ class MainInteractive(cmd.Cmd):
 
     @docopt_cmd(OG)
     def do_order(self, arg):
+        match = self.index_group.first_match
+        self.order_group.first_match = match
         self.order_group.perform(arg)
 
 option = docopt(__doc__, version='Mechanism Simulator 1.0')
