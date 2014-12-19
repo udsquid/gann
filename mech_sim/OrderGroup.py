@@ -8,6 +8,11 @@ Usage:
     order strategy load <name>
     order strategy rename <old-name> <new-name>
     order strategy delete <name>
+    order method (random | best | worst | middle)
+    order open (long | short) [--size=<n>] [(<date> <time>)]
+
+Options:
+    --size=<n>    Contract size [default: 1]
 """
 
 
@@ -16,14 +21,16 @@ Usage:
 #
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
+import random
 
 
 #
 # project libraries
 #
 from auto_complete import *
+from history.models import *
 from lib.exception_decorator import print_except_only
-from lib.time_utils import to_local
+from lib.time_utils import parse_to_aware, to_local
 from mech_sim.order.models import *
 
 
@@ -34,6 +41,10 @@ class OrderGroup(object):
 
     _strategy = None
     _method = None
+    _product = None
+    _first_match = None
+
+    TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
     @property
     def symbols(self):
@@ -53,7 +64,33 @@ class OrderGroup(object):
 
     @method.setter
     def method(self, value):
+        if value not in ['random', 'best', 'worst', 'middle']:
+            err_msg = "*** unsupported method: {}".format(value)
+            raise ValueError(err_msg)
         self._method = value
+
+    @property
+    def product(self):
+        return self._product
+
+    @product.setter
+    def product(self, value):
+        self._verify_symbol(value)
+        upper_value = value.upper()
+        if upper_value == 'TX':
+            self._product = Tx.objects
+
+    @property
+    def digits(self):
+        return 2
+
+    @property
+    def first_match(self):
+        return self._first_match
+
+    @first_match.setter
+    def first_match(self, value):
+        self._first_match = value
 
     @property
     def command_forms(self):
@@ -63,10 +100,19 @@ class OrderGroup(object):
                 ['order', 'strategy', 'load', '<name>'],
                 ['order', 'strategy', 'rename', '<old-name>', '<new-name>'],
                 ['order', 'strategy', 'delete', '<name>'],
+                ['order', 'method', ['random', 'best', 'worst', 'middle']],
+                ['order', 'open', ['long', 'short'],
+                          '--size=<n>', '<date> <time>'],
                 ]
 
     def complete_command(self, text, line, begin_index, end_index):
         return complete_command(text, line, self.command_forms)
+
+    def _verify_symbol(self, symbol):
+        upper_sym = symbol.upper()
+        if upper_sym not in self.symbols:
+            err_msg = "*** unknown symbol: {}".format(value)
+            raise ValueError(err_msg)
 
     @print_except_only
     def perform(self, arg):
@@ -74,17 +120,62 @@ class OrderGroup(object):
             if arg['list']:
                 self.show_strategies()
             elif arg['info']:
-                self.show_strategy_detail(arg['<name>'])
+                name = arg['<name>']
+                self.show_strategy_detail(name)
             elif arg['new']:
-                self.create_strategy_entry(arg['<name>'], arg['<symbol>'])
+                name = arg['<name>']
+                symbol = arg['<symbol>']
+                self.create_strategy_entry(name, symbol)
             elif arg['load']:
-                self.load_strategy(arg['<name>'])
+                name = arg['<name>']
+                self.load_strategy(name)
             elif arg['rename']:
-                self.rename_strategy(arg['<old-name>'], arg['<new-name>'])
+                old_name = arg['<old-name>']
+                new_name = arg['<new-name>']
+                self.rename_strategy(old_name, new_name)
             elif arg['delete']:
-                self.delete_strategy(arg['<name>'])
+                name = arg['<name>']
+                self.delete_strategy(name)
+        elif arg['method']:
+            if arg['random']:
+                self.method = 'random'
+            elif arg['best']:
+                self.method = 'best'
+            elif arg['worst']:
+                self.method = 'worst'
+            elif arg['middle']:
+                self.method = 'middle'
+        elif arg['open']:
+            # gather startegy
+            if not self.strategy:
+                raise Exception("*** no strategy specified")
+            strategy = self._query_strategy(self.strategy)
+            # gather date & time
+            if arg['<date>'] and arg['<time>']:
+                datetime_str = '{} {}'.format(arg['<date>'], arg['<time>'])
+                start_time = parse_to_aware(datetime_str)
+            else:
+                if not self.first_match:
+                    raise Exception("*** no date-time specified")
+                start_time = to_local(self.first_match.time)
+            # filter records
+            if arg['long']:
+                open_type = 'long'
+            elif arg['short']:
+                open_type = 'short'
+            records = self.product.filter(time__gte=start_time)
+            open_time = records[0].time
+            open_price = self.pick_open_price(records[0], open_type)
+            # gather contract size
+            size = arg['--size']
+            # open a contract
+            self.open_order(strategy,
+                            open_time,
+                            open_price,
+                            size,
+                            open_type)
         else:
-            err_msg = "*** should not be here, arg: " + str(arg)
+            err_msg = "*** invalid perform arguments: " + str(arg)
             raise ValueError(err_msg)
 
     def show_strategies(self):
@@ -95,42 +186,99 @@ class OrderGroup(object):
             print "{:>5} | {}".format(i+1, s.name)
 
     def show_strategy_detail(self, name):
-        s = self._get_strategy(name)
+        s = self._query_strategy(name)
         created_time = to_local(s.created_time)
-        _format = "%Y-%m-%d %H:%M:%S"
         print '   Name:', s.name
         print ' Symbol:', s.symbol
-        print 'Created:', created_time.strftime(_format)
+        print 'Created:', created_time.strftime(TIME_FORMAT)
 
-    def _get_strategy(self, name):
+    def _query_strategy(self, name):
         try:
             return Strategy.objects.get(name=name)
         except ObjectDoesNotExist:
-            err_msg = "*** strategy does not exist: %s" % name
+            err_msg = "*** strategy does not exist: {}".format(name)
             raise ValueError(err_msg)
 
     def create_strategy_entry(self, name, symbol):
-        upper_sym = symbol.upper()
-        if upper_sym not in self.symbols:
-            err_msg = "*** unknown symbol: %s" % symbol
-            raise ValueError(err_msg)
+        self._verify_symbol(symbol)
         try:
+            upper_sym = symbol.upper()
             Strategy.objects.create(name=name, symbol=upper_sym)
+            self.strategy = name
+            self.product = upper_sym
         except IntegrityError as e:
             if 'UNIQUE constraint failed' not in str(e):
                 raise e
-            err_msg = "*** duplicate name: %s" % name
+            err_msg = "*** duplicate name: {}".format(name)
             raise ValueError(err_msg)
 
     def load_strategy(self, name):
-        s = self._get_strategy(name)
+        s = self._query_strategy(name)
         self.strategy = s.name
+        self.product = s.symbol
 
     def rename_strategy(self, old_name, new_name):
-        s = self._get_strategy(old_name)
+        s = self._query_strategy(old_name)
         s.name = new_name
         s.save()
+        if self.strategy == old_name:
+            self.strategy = new_name
 
     def delete_strategy(self, name):
-        s = self._get_strategy(name)
+        s = self._query_strategy(name)
         s.delete()
+        if self.strategy == name:
+            self.strategy = None
+            self.product = None
+
+    def open_order(self, strategy, open_time, open_price, size, order_type):
+        Order.objects.create(strategy=strategy,
+                             open_time=open_time,
+                             open_price=open_price,
+                             size=size,
+                             state='open')
+        local_time = to_local(open_time)
+        local_time = local_time.strftime(TIME_FORMAT)
+        print "Opened an {} order at: {}, price: {}".format(order_type,
+                                                            local_time,
+                                                            open_price)
+
+    def pick_open_price(self, record, order_type):
+        if order_type not in ['long', 'short']:
+            err_msg = "*** unsupported order type: {}".format(order_type)
+            raise ValueError(err_msg)
+
+        # single point record, return it's price value directly
+        if hasattr(record, 'price'):
+            return record.price
+
+        # k-bar like record, pick a price by specified method
+        high = record.high
+        low = record.low
+        places = self.digits
+        if self.method == 'random':
+            lower = float(low)
+            upper = float(high)
+            open_price = random.uniform(lower, upper)
+            if places == 0:
+                return int(open_price)
+            return round(open_price, places)
+        elif self.method == 'best':
+            if order_type == 'long': 
+                return low
+            elif order_type == 'short':
+                return high
+        elif self.method == 'worst':
+            if order_type == 'long': 
+                return high
+            elif order_type == 'short':
+                return low
+        elif self.method == 'middle':
+            lower = float(low)
+            upper = float(high)
+            open_price = (upper + lower) / 2.0
+            if places == 0:
+                return int(open_price)
+            return round(open_price, places)
+        else:
+            raise ValueError("*** no method specified")
