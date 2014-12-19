@@ -14,8 +14,15 @@ class Strategy(models.Model):
         auto_now_add=True,
         verbose_name="Strategy created time")
 
+    def __unicode__(self):
+        return self.name
 
 class Order(models.Model):
+    STATE_CHOICES = (
+        ('open', 'Open'),
+        ('close', 'Close'),
+        )
+
     strategy = models.ForeignKey(Strategy)
     open_time = models.DateTimeField()
     open_price = models.DecimalField(max_digits=12, decimal_places=2)
@@ -23,4 +30,5 @@ class Order(models.Model):
     close_time = models.DateTimeField(null=True)
     close_price = models.DecimalField(max_digits=12, decimal_places=2,
                                       null=True)
-    state = models.CharField(max_length=8)
+    state = models.CharField(max_length=8,
+                             choices=STATE_CHOICES)
