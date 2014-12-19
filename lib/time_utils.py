@@ -49,6 +49,12 @@ def to_aware(naive):
     return pytz.timezone(curr_tz).localize(naive)
 
 
+def parse_to_aware(value):
+    datetime_obj = parse_datetime(value)
+    assert datetime_obj, "invalid datetime format: {}".format(value)
+    return to_aware(datetime_obj)
+
+
 def to_local(datetime_obj):
     curr_tz = timezone.get_current_timezone()
     return datetime_obj.astimezone(curr_tz)
