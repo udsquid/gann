@@ -238,11 +238,7 @@ class OrderGroup(object):
 
     def open_order(self, strategy, open_type, open_time, open_price, size):
         self._verify_open_type(open_type)
-        type_symbol = None
-        if open_type == 'long':
-            type_symbol = 'L'
-        elif open_type == 'short':
-            type_symbol = 'S'
+        type_symbol = Order.get_open_type_symbol(open_type)
         Order.objects.create(strategy=strategy,
                              open_type=type_symbol,
                              open_time=open_time,

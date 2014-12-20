@@ -27,6 +27,13 @@ class Order(models.Model):
         ('close', 'Close'),
         )
 
+    @classmethod
+    def get_open_type_symbol(cls, display_name):
+        for symbol, display in cls.OPEN_TYPE:
+            if display == display_name.capitalize():
+                return symbol
+        return None
+
     strategy = models.ForeignKey(Strategy)
     open_type = models.CharField(max_length=1,
                                  choices=OPEN_TYPE)
