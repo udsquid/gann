@@ -18,12 +18,18 @@ class Strategy(models.Model):
         return self.name
 
 class Order(models.Model):
+    OPEN_TYPE = (
+        ('L', 'Long'),
+        ('S', 'Short'),
+        )
     STATE_CHOICES = (
         ('open', 'Open'),
         ('close', 'Close'),
         )
 
     strategy = models.ForeignKey(Strategy)
+    open_type = models.CharField(max_length=1,
+                                 choices=OPEN_TYPE)
     open_time = models.DateTimeField()
     open_price = models.DecimalField(max_digits=12, decimal_places=2)
     size = models.PositiveIntegerField()

@@ -170,10 +170,10 @@ class OrderGroup(object):
             size = arg['--size']
             # open a contract
             self.open_order(strategy,
+                            open_type,
                             open_time,
                             open_price,
-                            size,
-                            open_type)
+                            size)
         else:
             err_msg = "*** invalid perform arguments: " + str(arg)
             raise ValueError(err_msg)
@@ -231,22 +231,32 @@ class OrderGroup(object):
             self.strategy = None
             self.product = None
 
-    def open_order(self, strategy, open_time, open_price, size, order_type):
+    def _verify_open_type(self, open_type):
+        if open_type not in ['long', 'short']:
+            err_msg = "*** unsupported open type: {}".format(open_type)
+            raise ValueError(err_msg)
+
+    def open_order(self, strategy, open_type, open_time, open_price, size):
+        self._verify_open_type(open_type)
+        type_symbol = None
+        if open_type == 'long':
+            type_symbol = 'L'
+        elif open_type == 'short':
+            type_symbol = 'S'
         Order.objects.create(strategy=strategy,
+                             open_type=type_symbol,
                              open_time=open_time,
                              open_price=open_price,
                              size=size,
                              state='open')
         local_time = to_local(open_time)
         local_time = local_time.strftime(TIME_FORMAT)
-        print "Opened an {} order at: {}, price: {}".format(order_type,
-                                                            local_time,
-                                                            open_price)
+        print "Opened a {} order at: {}, price: {}".format(open_type,
+                                                           local_time,
+                                                           open_price)
 
-    def pick_open_price(self, record, order_type):
-        if order_type not in ['long', 'short']:
-            err_msg = "*** unsupported order type: {}".format(order_type)
-            raise ValueError(err_msg)
+    def pick_open_price(self, record, open_type):
+        self._verify_open_type(open_type)
 
         # single point record, return it's price value directly
         if hasattr(record, 'price'):
@@ -264,14 +274,14 @@ class OrderGroup(object):
                 return int(open_price)
             return round(open_price, places)
         elif self.method == 'best':
-            if order_type == 'long': 
+            if open_type == 'long': 
                 return low
-            elif order_type == 'short':
+            elif open_type == 'short':
                 return high
         elif self.method == 'worst':
-            if order_type == 'long': 
+            if open_type == 'long': 
                 return high
-            elif order_type == 'short':
+            elif open_type == 'short':
                 return low
         elif self.method == 'middle':
             lower = float(low)

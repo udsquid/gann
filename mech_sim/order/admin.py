@@ -45,6 +45,7 @@ class StrategyAdmin(admin.ModelAdmin):
 
 class OrderAdmin(admin.ModelAdmin):
     list_display = ('strategy',
+                    'open_type',
                     format_open_time,
                     'open_price',
                     'size',
