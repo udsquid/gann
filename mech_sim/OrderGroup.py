@@ -10,6 +10,7 @@ Usage:
     order strategy delete <name>
     order method (random | best | worst | middle)
     order open (long | short) [--size=<n>] [(<date> <time>)]
+    order status
 
 Options:
     --size=<n>    Contract size [default: 1]
@@ -56,6 +57,10 @@ class OrderGroup(object):
 
     @strategy.setter
     def strategy(self, value):
+        if not isinstance(value, Strategy):
+            value_type = type(value)
+            err_msg = "*** error strategy value: <{}>{}".format(value_type,
+                                                                value)
         self._strategy = value
 
     @property
@@ -75,6 +80,9 @@ class OrderGroup(object):
 
     @product.setter
     def product(self, value):
+        if not value:
+            self._product = None
+            return
         self._verify_symbol(value)
         upper_value = value.upper()
         if upper_value == 'TX':
@@ -103,6 +111,7 @@ class OrderGroup(object):
                 ['order', 'method', ['random', 'best', 'worst', 'middle']],
                 ['order', 'open', ['long', 'short'],
                           '--size=<n>', '<date> <time>'],
+                ['order', 'status'],
                 ]
 
     def complete_command(self, text, line, begin_index, end_index):
@@ -149,7 +158,7 @@ class OrderGroup(object):
             # gather startegy
             if not self.strategy:
                 raise Exception("*** no strategy specified")
-            strategy = self._query_strategy(self.strategy)
+            strategy = self.strategy
             # gather date & time
             if arg['<date>'] and arg['<time>']:
                 datetime_str = '{} {}'.format(arg['<date>'], arg['<time>'])
@@ -163,6 +172,8 @@ class OrderGroup(object):
                 open_type = 'long'
             elif arg['short']:
                 open_type = 'short'
+            if not self.product:
+                raise Exception("*** no product specified")
             records = self.product.filter(time__gte=start_time)
             open_time = records[0].time
             open_price = self.pick_open_price(records[0], open_type)
@@ -174,6 +185,8 @@ class OrderGroup(object):
                             open_time,
                             open_price,
                             size)
+        elif arg['status']:
+            self.show_active_orders()
         else:
             err_msg = "*** invalid perform arguments: " + str(arg)
             raise ValueError(err_msg)
@@ -203,8 +216,8 @@ class OrderGroup(object):
         self._verify_symbol(symbol)
         try:
             upper_sym = symbol.upper()
-            Strategy.objects.create(name=name, symbol=upper_sym)
-            self.strategy = name
+            self.strategy = Strategy.objects.create(name=name,
+                                                    symbol=upper_sym)
             self.product = upper_sym
         except IntegrityError as e:
             if 'UNIQUE constraint failed' not in str(e):
@@ -213,21 +226,20 @@ class OrderGroup(object):
             raise ValueError(err_msg)
 
     def load_strategy(self, name):
-        s = self._query_strategy(name)
-        self.strategy = s.name
-        self.product = s.symbol
+        self.strategy = self._query_strategy(name)
+        self.product = self.strategy.symbol
 
     def rename_strategy(self, old_name, new_name):
         s = self._query_strategy(old_name)
         s.name = new_name
         s.save()
-        if self.strategy == old_name:
-            self.strategy = new_name
+        if self.strategy.name == old_name:
+            self.strategy = s
 
     def delete_strategy(self, name):
         s = self._query_strategy(name)
         s.delete()
-        if self.strategy == name:
+        if self.strategy.name == name:
             self.strategy = None
             self.product = None
 
@@ -288,3 +300,6 @@ class OrderGroup(object):
             return round(open_price, places)
         else:
             raise ValueError("*** no method specified")
+
+    def show_active_orders(self):
+        pass
