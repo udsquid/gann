@@ -23,8 +23,8 @@ class Order(models.Model):
         ('S', 'Short'),
         )
     STATE_CHOICES = (
-        ('open', 'Open'),
-        ('close', 'Close'),
+        ('O', 'Open'),
+        ('C', 'Close'),
         )
 
     @classmethod
@@ -43,5 +43,5 @@ class Order(models.Model):
     close_time = models.DateTimeField(null=True)
     close_price = models.DecimalField(max_digits=12, decimal_places=2,
                                       null=True)
-    state = models.CharField(max_length=8,
+    state = models.CharField(max_length=1,
                              choices=STATE_CHOICES)

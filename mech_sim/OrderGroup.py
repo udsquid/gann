@@ -244,7 +244,7 @@ class OrderGroup(object):
                              open_time=open_time,
                              open_price=open_price,
                              size=size,
-                             state='open')
+                             state='O')
         local_time = to_local(open_time)
         local_time = local_time.strftime(TIME_FORMAT)
         print "Opened a {} order at: {}, price: {}".format(open_type,
