@@ -156,8 +156,7 @@ class OrderGroup(object):
                 self.method = 'middle'
         elif arg['open']:
             # gather startegy
-            if not self.strategy:
-                raise Exception("*** no strategy specified")
+            self._verify_strategy()
             strategy = self.strategy
             # gather date & time
             if arg['<date>'] and arg['<time>']:
@@ -301,5 +300,30 @@ class OrderGroup(object):
         else:
             raise ValueError("*** no method specified")
 
+    def _verify_strategy(self):
+        if not self.strategy:
+            raise Exception("*** no strategy specified")
+
     def show_active_orders(self):
-        pass
+        self._verify_strategy()
+        print '   Name:', self.strategy.name
+        print ' Symbol:', self.strategy.symbol
+        print ' Method:', self.method
+        print 'Active orders:'
+        orders = Order.objects.filter(strategy=self.strategy,
+                                      state='O')
+        if not orders:
+            print 'None'
+            return
+        # show orders in table
+        print '{} | {:^19} | {} | {} |'.format(
+            'Type', 'Time', 'Price', 'Size')
+        print '-' * 43
+        for order in orders:
+            temp = to_local(order.open_time)
+            formatted_open_time = temp.strftime(TIME_FORMAT)
+            print '{:>4} | {} | {:>5} | {:>4} |'.format(
+                order.open_type,
+                formatted_open_time,
+                order.open_price,
+                order.size)
