@@ -316,14 +316,15 @@ class OrderGroup(object):
             print 'None'
             return
         # show orders in table
-        print '{} | {:^19} | {} | {} |'.format(
-            'Type', 'Time', 'Price', 'Size')
-        print '-' * 43
+        print '{} | {:>5} | {:^19} | {:>6} | {} |'.format(
+            'Ticket', 'Type', 'Time', 'Price', 'Size')
+        print '-' * 54
         for order in orders:
             temp = to_local(order.open_time)
             formatted_open_time = temp.strftime(TIME_FORMAT)
-            print '{:>4} | {} | {:>5} | {:>4} |'.format(
-                order.open_type,
+            print '{:>6} | {:>5} | {} | {:>6} | {:>4} |'.format(
+                order.pk,
+                order.get_open_type_display(),
                 formatted_open_time,
                 order.open_price,
                 order.size)
