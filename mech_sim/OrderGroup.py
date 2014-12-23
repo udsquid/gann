@@ -10,6 +10,7 @@ Usage:
     order strategy delete <name>
     order method (random | best | worst | middle)
     order open (long | short) [--size=<n>] [(<date> <time>)]
+    order close [(<date> <time>)] [--ticket=<id>]
     order status
 
 Options:
@@ -111,6 +112,7 @@ class OrderGroup(object):
                 ['order', 'method', ['random', 'best', 'worst', 'middle']],
                 ['order', 'open', ['long', 'short'],
                           '--size=<n>', '<date> <time>'],
+                ['order', 'close', '<date> <time>', '--ticket=<id>'],
                 ['order', 'status'],
                 ]
 
@@ -155,30 +157,10 @@ class OrderGroup(object):
             elif arg['middle']:
                 self.method = 'middle'
         elif arg['open']:
-            # gather startegy
             self._verify_strategy()
             strategy = self.strategy
-            # gather date & time
-            if arg['<date>'] and arg['<time>']:
-                datetime_str = '{} {}'.format(arg['<date>'], arg['<time>'])
-                start_time = parse_to_aware(datetime_str)
-            else:
-                if not self.first_match:
-                    raise Exception("*** no date-time specified")
-                start_time = to_local(self.first_match.time)
-            # filter records
-            if arg['long']:
-                open_type = 'long'
-            elif arg['short']:
-                open_type = 'short'
-            if not self.product:
-                raise Exception("*** no product specified")
-            records = self.product.filter(time__gte=start_time)
-            open_time = records[0].time
-            open_price = self.pick_open_price(records[0], open_type)
-            # gather contract size
+            open_type, open_time, open_price = self._gather_open_info(arg)
             size = arg['--size']
-            # open a contract
             self.open_order(strategy,
                             open_type,
                             open_time,
@@ -328,3 +310,30 @@ class OrderGroup(object):
                 formatted_open_time,
                 order.open_price,
                 order.size)
+
+    def _make_start_time(self, arg):
+        if arg['<date>'] and arg['<time>']:
+            datetime_str = '{} {}'.format(arg['<date>'], arg['<time>'])
+            return parse_to_aware(datetime_str)
+        if self.first_match:
+            return to_local(self.first_match.time)
+        raise Exception("*** no date-time specified or match record")
+
+    def _gather_open_info(self, arg):
+        # gather open type
+        if arg['long']:
+            open_type = 'long'
+        elif arg['short']:
+            open_type = 'short'
+        # gather open time & price
+        self._verify_product()
+        start_time = self._make_start_time(arg)
+        records = self.product.filter(time__gte=start_time)
+        open_time = records[0].time
+        open_price = self.pick_open_price(records[0], open_type)
+
+        return open_type, open_time, open_price
+
+    def _verify_product(self):
+        if not self.product:
+            raise Exception("*** no product specified")
