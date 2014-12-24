@@ -62,3 +62,32 @@ class TestOrderGroup(unittest.TestCase):
         record = self._query_tx('2002-06-26 11:13:00')
         long_price = self.order_group.pick_open_price(record, 'long')
         self.assertEqual(long_price, 5141.5)
+
+    def test_pick_close_price_by_random(self):
+        self.order_group.method = 'random'
+        record = self._query_tx('2002-06-26 11:13:00')
+        price = self.order_group.pick_close_price(record, 'long')
+        self.assertGreaterEqual(price, record.low)
+        self.assertLessEqual(price, record.high)
+
+    def test_pick_close_price_by_best(self):
+        self.order_group.method = 'best'
+        record = self._query_tx('2002-06-26 11:13:00')
+        long_price = self.order_group.pick_close_price(record, 'long')
+        self.assertEqual(long_price, 5148)
+        short_price = self.order_group.pick_close_price(record, 'short')
+        self.assertEqual(short_price, 5135)
+
+    def test_pick_close_price_by_worst(self):
+        self.order_group.method = 'worst'
+        record = self._query_tx('2002-06-26 11:13:00')
+        long_price = self.order_group.pick_close_price(record, 'long')
+        self.assertEqual(long_price, 5135)
+        short_price = self.order_group.pick_close_price(record, 'short')
+        self.assertEqual(short_price, 5148)
+
+    def test_pick_close_price_by_middle(self):
+        self.order_group.method = 'middle'
+        record = self._query_tx('2002-06-26 11:13:00')
+        long_price = self.order_group.pick_close_price(record, 'long')
+        self.assertEqual(long_price, 5141.5)

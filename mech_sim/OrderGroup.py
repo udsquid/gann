@@ -166,6 +166,13 @@ class OrderGroup(object):
                             open_time,
                             open_price,
                             size)
+        elif arg['close']:
+            self._verify_strategy()
+            close_time, close_price = self._gather_close_info(arg)
+            print 'close time:', close_time
+            print 'close price:', close_price
+            ticket = arg['--ticket']
+            print 'ticket:', ticket
         elif arg['status']:
             self.show_active_orders()
         else:
@@ -337,3 +344,50 @@ class OrderGroup(object):
     def _verify_product(self):
         if not self.product:
             raise Exception("*** no product specified")
+
+    def _gather_close_info(self, arg):
+        # gather close time & price
+        self._verify_product()
+        start_time = self._make_start_time(arg)
+        records = self.product.filter(time__gte=start_time)
+        close_time = records[0].time
+        close_price = self.pick_close_price(records[0], open_type)
+
+
+    def pick_close_price(self, record, open_type):
+        self._verify_open_type(open_type)
+
+        # single point record, return it's price value directly
+        if hasattr(record, 'price'):
+            return record.price
+
+        # k-bar like record, pick a price by specified method
+        high = record.high
+        low = record.low
+        places = self.digits
+        if self.method == 'random':
+            lower = float(low)
+            upper = float(high)
+            close_price = random.uniform(lower, upper)
+            if places == 0:
+                return int(close_price)
+            return round(close_price, places)
+        elif self.method == 'best':
+            if open_type == 'long': 
+                return high
+            elif open_type == 'short':
+                return low
+        elif self.method == 'worst':
+            if open_type == 'long': 
+                return low
+            elif open_type == 'short':
+                return high
+        elif self.method == 'middle':
+            lower = float(low)
+            upper = float(high)
+            close_price = (upper + lower) / 2.0
+            if places == 0:
+                return int(close_price)
+            return round(close_price, places)
+        else:
+            raise ValueError("*** no method specified")
