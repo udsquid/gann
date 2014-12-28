@@ -301,16 +301,16 @@ class OrderGroup(object):
         print ' Symbol:', self.strategy.symbol
         print ' Method:', self.method
         print 'Active orders:'
-        orders = Order.objects.filter(strategy=self.strategy,
-                                      state='O')
-        if not orders:
-            print 'None'
+        active_orders = Order.objects.filter(strategy=self.strategy,
+                                             state='O')
+        if not active_orders.exists():
+            print '--- None ---'
             return
         # show orders in table
         print '{} | {:>5} | {:^19} | {:>6} | {} |'.format(
             'Ticket', 'Type', 'Time', 'Price', 'Size')
         print '-' * 54
-        for order in orders:
+        for order in active_orders:
             temp = to_local(order.open_time)
             formatted_open_time = temp.strftime(TIME_FORMAT)
             print '{:>6} | {:>5} | {} | {:>6} | {:>4} |'.format(
