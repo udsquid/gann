@@ -415,6 +415,3 @@ class OrderGroup(object):
         order.close_price = close_price
         order.state = 'C'
         order.save()
-
-# TODO: do not use 'not query_obj' in show_active_orders()
-# TODO: is _query_strategy name ok?
