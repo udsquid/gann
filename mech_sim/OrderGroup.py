@@ -177,10 +177,7 @@ class OrderGroup(object):
                 ticket = arg['--ticket']
             else:
                 ticket = self.query_last_active_ticket(self.strategy)
-            print 'ticket:', ticket
             _time, _price = self._gather_close_info(ticket, arg)
-            print 'close time:', _time
-            print 'close price:', _price
             self.close_order(ticket, _time, _price)
         elif arg['status']:
             self.show_active_orders()
@@ -415,3 +412,9 @@ class OrderGroup(object):
         order.close_price = close_price
         order.state = 'C'
         order.save()
+
+        local_time = to_local(close_time)
+        local_time = local_time.strftime(TIME_FORMAT)
+        print "Closed order #{} at {}, price is {}".format(ticket,
+                                                           local_time,
+                                                           close_price)
