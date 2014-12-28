@@ -167,12 +167,17 @@ class OrderGroup(object):
                             open_price,
                             size)
         elif arg['close']:
-            self._verify_strategy()
-            close_time, close_price = self._gather_close_info(arg)
-            print 'close time:', close_time
-            print 'close price:', close_price
-            ticket = arg['--ticket']
+            if arg['--ticket']:
+                self._verify_ticket(arg['--ticket'])
+                ticket = arg['--ticket']
+            else:
+                self._verify_strategy()
+                ticket = self.query_last_active_ticket(self.strategy)
             print 'ticket:', ticket
+            _time, _price = self._gather_close_info(ticket, arg)
+            print 'close time:', _time
+            print 'close price:', _price
+            self.close_order(ticket, _time, _price)
         elif arg['status']:
             self.show_active_orders()
         else:
@@ -345,14 +350,34 @@ class OrderGroup(object):
         if not self.product:
             raise Exception("*** no product specified")
 
-    def _gather_close_info(self, arg):
-        # gather close time & price
-        self._verify_product()
+    def _verify_ticket(self, ticket):
+        self._verify_strategy()
+        try:
+            Order.objects.get(pk=ticket, strategy=self.strategy)
+        except ObjectDoesNotExist:
+            err_fmt = "*** strategy {} does not have ticket: {}"
+            err_msg = err_fmt.format(self.strategy.name, ticket)
+            raise ValueError(err_msg)
+
+    def query_last_active_ticket(self, strategy):
+        active_orders = Order.objects.filter(strategy=strategy,
+                                             state='O')
+        if not active_orders.exists():
+            err_fmt = "*** no active orders in strategy: {}"
+            err_msg = err_fmt.format(strategy.name)
+            raise Exception(err_msg)
+        last_order = active_orders.order_by('pk').last()
+        return last_order.pk
+
+    def _gather_close_info(self, ticket, arg):
+        order = Order.objects.get(pk=ticket)
+        open_type = order.get_open_type_display().lower()
         start_time = self._make_start_time(arg)
+        self._verify_product()
         records = self.product.filter(time__gte=start_time)
         close_time = records[0].time
         close_price = self.pick_close_price(records[0], open_type)
-
+        return close_time, close_price
 
     def pick_close_price(self, record, open_type):
         self._verify_open_type(open_type)
@@ -391,3 +416,19 @@ class OrderGroup(object):
             return round(close_price, places)
         else:
             raise ValueError("*** no method specified")
+
+    def close_order(self, ticket, close_time, close_price):
+        order = Order.objects.get(pk=ticket)
+        if order.get_state_display() == 'Close':
+            raise Exception("*** order had been closed before")
+        if order.open_time > close_time:
+            raise Exception("*** close time is before open time")
+        order.close_time = close_time
+        order.close_price = close_price
+        order.state = 'C'
+        order.save()
+
+# TODO: do not use 'not query_obj' in show_active_orders()
+# TODO: pick_*_price() should raise Exception instead of ValueError
+# TODO: is _query_strategy name ok?
+# TODO: eliminate some _verify_xxx
