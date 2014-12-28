@@ -12,6 +12,7 @@ Usage:
     order open (long | short) [--size=<n>] [(<date> <time>)]
     order close [(<date> <time>)] [--ticket=<id>]
     order status
+    order delete <from>
 
 Options:
     --size=<n>    Contract size [default: 1]
@@ -120,6 +121,7 @@ class OrderGroup(object):
                           '--size=<n>', '<date> <time>'],
                 ['order', 'close', '<date> <time>', '--ticket=<id>'],
                 ['order', 'status'],
+                ['order', 'delete', '<from>'],
                 ]
 
     def complete_command(self, text, line, begin_index, end_index):
@@ -181,6 +183,9 @@ class OrderGroup(object):
             self.close_order(ticket, _time, _price)
         elif arg['status']:
             self.show_active_orders()
+        elif arg['delete']:
+            from_ticket = arg['<from>']
+            self.delete_order(from_ticket, self.strategy)
         else:
             err_msg = "*** invalid perform arguments: " + str(arg)
             raise ValueError(err_msg)
@@ -418,3 +423,19 @@ class OrderGroup(object):
         print "Closed order #{} at {}, price is {}".format(ticket,
                                                            local_time,
                                                            close_price)
+
+    def delete_order(self, ticket, strategy):
+        orders = Order.objects.filter(pk__gte=ticket,
+                                      strategy=strategy)
+        if not orders.exists():
+            print "!!! WARNING: no matching orders, skip deletion"
+            return
+        delete_num = orders.count()
+        confirm_msg = "{} order(s) will be deleted, " \
+                      "are you sure? (y/n): ".format(delete_num)
+        choice = raw_input(confirm_msg)
+        if choice.lower() in ['y', 'yes']:
+            orders.delete()
+            print "{} order(s) has beed deleted".format(delete_num)
+        else:
+            print "cancel deletion"
