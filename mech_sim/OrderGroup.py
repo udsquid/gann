@@ -54,6 +54,8 @@ class OrderGroup(object):
 
     @property
     def strategy(self):
+        if not self._strategy:
+            raise Exception("*** no strategy specified")
         return self._strategy
 
     @strategy.setter
@@ -66,6 +68,8 @@ class OrderGroup(object):
 
     @property
     def method(self):
+        if not self._method:
+            raise Exception("*** no method specified")
         return self._method
 
     @method.setter
@@ -77,6 +81,8 @@ class OrderGroup(object):
 
     @property
     def product(self):
+        if not self._product:
+            raise Exception("*** no product specified")
         return self._product
 
     @product.setter
@@ -157,7 +163,6 @@ class OrderGroup(object):
             elif arg['middle']:
                 self.method = 'middle'
         elif arg['open']:
-            self._verify_strategy()
             strategy = self.strategy
             open_type, open_time, open_price = self._gather_open_info(arg)
             size = arg['--size']
@@ -171,7 +176,6 @@ class OrderGroup(object):
                 self._verify_ticket(arg['--ticket'])
                 ticket = arg['--ticket']
             else:
-                self._verify_strategy()
                 ticket = self.query_last_active_ticket(self.strategy)
             print 'ticket:', ticket
             _time, _price = self._gather_close_info(ticket, arg)
@@ -291,15 +295,8 @@ class OrderGroup(object):
             if places == 0:
                 return int(open_price)
             return round(open_price, places)
-        else:
-            raise ValueError("*** no method specified")
-
-    def _verify_strategy(self):
-        if not self.strategy:
-            raise Exception("*** no strategy specified")
 
     def show_active_orders(self):
-        self._verify_strategy()
         print '   Name:', self.strategy.name
         print ' Symbol:', self.strategy.symbol
         print ' Method:', self.method
@@ -338,7 +335,6 @@ class OrderGroup(object):
         elif arg['short']:
             open_type = 'short'
         # gather open time & price
-        self._verify_product()
         start_time = self._make_start_time(arg)
         records = self.product.filter(time__gte=start_time)
         open_time = records[0].time
@@ -346,12 +342,7 @@ class OrderGroup(object):
 
         return open_type, open_time, open_price
 
-    def _verify_product(self):
-        if not self.product:
-            raise Exception("*** no product specified")
-
     def _verify_ticket(self, ticket):
-        self._verify_strategy()
         try:
             Order.objects.get(pk=ticket, strategy=self.strategy)
         except ObjectDoesNotExist:
@@ -373,7 +364,6 @@ class OrderGroup(object):
         order = Order.objects.get(pk=ticket)
         open_type = order.get_open_type_display().lower()
         start_time = self._make_start_time(arg)
-        self._verify_product()
         records = self.product.filter(time__gte=start_time)
         close_time = records[0].time
         close_price = self.pick_close_price(records[0], open_type)
@@ -414,8 +404,6 @@ class OrderGroup(object):
             if places == 0:
                 return int(close_price)
             return round(close_price, places)
-        else:
-            raise ValueError("*** no method specified")
 
     def close_order(self, ticket, close_time, close_price):
         order = Order.objects.get(pk=ticket)
@@ -429,6 +417,4 @@ class OrderGroup(object):
         order.save()
 
 # TODO: do not use 'not query_obj' in show_active_orders()
-# TODO: pick_*_price() should raise Exception instead of ValueError
 # TODO: is _query_strategy name ok?
-# TODO: eliminate some _verify_xxx
