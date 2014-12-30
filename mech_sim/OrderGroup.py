@@ -11,8 +11,8 @@ Usage:
     order method (random | best | worst | middle)
     order open (long | short) [--size=<n>] [(<date> <time>)]
     order close [(<date> <time>)] [--ticket=<id>]
-    order status
     order delete <from>
+    order status
 
 Options:
     --size=<n>    Contract size [default: 1]
@@ -120,8 +120,8 @@ class OrderGroup(object):
                 ['order', 'open', ['long', 'short'],
                           '--size=<n>', '<date> <time>'],
                 ['order', 'close', '<date> <time>', '--ticket=<id>'],
-                ['order', 'status'],
                 ['order', 'delete', '<from>'],
+                ['order', 'status'],
                 ]
 
     def complete_command(self, text, line, begin_index, end_index):
@@ -181,11 +181,11 @@ class OrderGroup(object):
                 ticket = self.query_last_active_ticket(self.strategy)
             _time, _price = self._gather_close_info(ticket, arg)
             self.close_order(ticket, _time, _price)
-        elif arg['status']:
-            self.show_active_orders()
         elif arg['delete']:
             from_ticket = arg['<from>']
             self.delete_order(from_ticket, self.strategy)
+        elif arg['status']:
+            self.show_active_orders()
         else:
             err_msg = "*** invalid perform arguments: " + str(arg)
             raise ValueError(err_msg)
