@@ -4,6 +4,7 @@ Sub-group commands for index operations.
 Usage:
     index product <symbol>
     index range (start | end) <date> [<time>]
+    index range forward
     index range reset
     index status
     index (search | searchf) <operator> <value>
@@ -44,6 +45,8 @@ class IndexGroup(object):
     actions = ['product', 'range', 'status', 'search', 'searchf']
     symbol = None
 
+    TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+
     def __init__(self):
         products = ProductInfo.objects.all()
         self.symbols = [p.symbol for p in products]
@@ -59,6 +62,7 @@ class IndexGroup(object):
     def command_form(self):
         return [['index', 'product', '<symbol>'],
                 ['index', 'range', ['start', 'end'], '<date>', '[<time>]'],
+                ['index', 'range', 'forward'],
                 ['index', 'range', 'reset'],
                 ['index', 'status'],
                 ['index', ['search', 'searchf'], '<operator>', '<value>',
@@ -73,7 +77,12 @@ class IndexGroup(object):
             symbol = arg['<symbol>'].upper()
             self.set_product(symbol)
         elif arg['range']:
-            if arg['reset']:
+            if arg['forward']:
+                self.forward_range_start()
+                new_start = self.range_start.strftime(TIME_FORMAT)
+                print "Range start has been forwarded to [{}]".format(
+                    new_start)
+            elif arg['reset']:
                 self.reset_range()
             else:
                 self.set_range(arg)
@@ -320,10 +329,7 @@ class IndexGroup(object):
             print "Not found!"
             return
         self._first_match = history[0]
-        # push forward the range start
-        _1_sec = timedelta(0, 1)
-        new_start = self._first_match.time + _1_sec
-        self.range_start = new_start
+        self.forward_range_start()
         # show first 5 records
         first_5 = history[:5]
         for rec in first_5:
@@ -336,3 +342,10 @@ class IndexGroup(object):
             print "*** no symbol specified, " + \
                 "please use 'index product <symbol>' first"
             return False
+
+    def forward_range_start(self):
+        if not self.first_match:
+            raise Exception("*** no first match record")
+
+        one_sec = timedelta(0, 1)
+        self.range_start = self.first_match.time + one_sec
