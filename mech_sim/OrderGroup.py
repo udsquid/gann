@@ -13,6 +13,7 @@ Usage:
     order close [(<date> <time>)] [--ticket=<id>]
     order delete <from>
     order status
+    order summary
 
 Options:
     --size=<n>    Contract size [default: 1]
@@ -122,6 +123,7 @@ class OrderGroup(object):
                 ['order', 'close', '<date> <time>', '--ticket=<id>'],
                 ['order', 'delete', '<from>'],
                 ['order', 'status'],
+                ['order', 'summary'],
                 ]
 
     def complete_command(self, text, line, begin_index, end_index):
@@ -186,6 +188,8 @@ class OrderGroup(object):
             self.delete_order(from_ticket, self.strategy)
         elif arg['status']:
             self.show_active_orders()
+        elif arg['summary']:
+            self.show_order_summary()
         else:
             err_msg = "*** invalid perform arguments: " + str(arg)
             raise ValueError(err_msg)
@@ -250,17 +254,19 @@ class OrderGroup(object):
     def open_order(self, strategy, open_type, open_time, open_price, size):
         self._verify_open_type(open_type)
         type_symbol = Order.get_open_type_symbol(open_type)
-        Order.objects.create(strategy=strategy,
-                             open_type=type_symbol,
-                             open_time=open_time,
-                             open_price=open_price,
-                             size=size,
-                             state='O')
+        new_order = Order.objects.create(strategy=strategy,
+                                         open_type=type_symbol,
+                                         open_time=open_time,
+                                         open_price=open_price,
+                                         size=size,
+                                         state='O')
         local_time = to_local(open_time)
         local_time = local_time.strftime(TIME_FORMAT)
-        print "Opened a {} order at: {}, price: {}".format(open_type,
-                                                           local_time,
-                                                           open_price)
+        print "Opened a {} order #{} at: {}, price: {}".format(
+            open_type.upper(),
+            new_order.pk,
+            local_time,
+            open_price)
 
     def pick_open_price(self, record, open_type):
         self._verify_open_type(open_type)
@@ -439,3 +445,9 @@ class OrderGroup(object):
             print "{} order(s) has beed deleted".format(delete_num)
         else:
             print "cancel deletion"
+
+    def show_order_summary(self):
+        print "Strategy: {:<40} Symbol: {}".format(
+            self.strategy.name,
+            self.strategy.symbol)
+        print "Win: {:>10}    Lose: {:>10}".format('', '')
