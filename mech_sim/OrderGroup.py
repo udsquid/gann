@@ -262,7 +262,7 @@ class OrderGroup(object):
                                          state='O')
         local_time = to_local(open_time)
         local_time = local_time.strftime(TIME_FORMAT)
-        print "Opened a {} order #{} at: [{}], price: {}".format(
+        print "Opened a {} order #{} at [{}], price is {}".format(
             open_type.upper(),
             new_order.pk,
             local_time,
@@ -426,9 +426,8 @@ class OrderGroup(object):
 
         local_time = to_local(close_time)
         local_time = local_time.strftime(TIME_FORMAT)
-        print "Closed order #{} at {}, price is {}".format(ticket,
-                                                           local_time,
-                                                           close_price)
+        print "Closed order #{} at [{}], price is {}".format(
+            ticket, local_time, close_price)
 
     def delete_order(self, ticket, strategy):
         orders = Order.objects.filter(pk__gte=ticket,
