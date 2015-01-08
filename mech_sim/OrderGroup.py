@@ -454,12 +454,12 @@ class OrderGroup(object):
         orders = Order.objects.filter(strategy=self.strategy,
                                       state='C')
         profit_cnt, loss_cnt = self._calculate_profit_loss_count(orders)
-        line = "Num. of profits: {:<10} Num. of losses: {:<10}"
+        line = "No. of profits: {:<10} No. of losses: {:<10}"
         line = line.format(profit_cnt, loss_cnt)
         print line
         total_trans = profit_cnt + loss_cnt
         profit_ratio = float(profit_cnt) / total_trans
-        line = "Num. of transactions: {:<10} Profit ratio: {:.1%}"
+        line = "No. of transactions: {:<10} Profit ratio: {:.1%}"
         line = line.format(total_trans, profit_ratio)
         print line
 
