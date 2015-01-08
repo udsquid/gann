@@ -51,7 +51,8 @@ class OrderAdmin(admin.ModelAdmin):
                     'size',
                     format_close_time,
                     'close_price',
-                    'state')
+                    'state',
+                    'gross_profit')
     date_hierarchy = 'open_time'
     ordering = ('open_time',)
 
