@@ -247,7 +247,7 @@ class OrderGroup(object):
             self.product = None
 
     def _verify_open_type(self, open_type):
-        if open_type not in ['long', 'short']:
+        if open_type.lower() not in ['long', 'short']:
             err_msg = "*** unsupported open type: {}".format(open_type)
             raise ValueError(err_msg)
 
@@ -449,4 +449,34 @@ class OrderGroup(object):
         print "Strategy: {:<40} Symbol: {}".format(
             self.strategy.name,
             self.strategy.symbol)
-        print "Win: {:>10}    Lose: {:>10}".format('', '')
+        orders = Order.objects.filter(strategy=self.strategy,
+                                      state='C')
+        profit_cnt, loss_cnt = self._calculate_profit_loss_count(orders)
+        line = "Num. of profits: {:<10} Num. of losses: {:<10}"
+        line = line.format(profit_cnt, loss_cnt)
+        print line
+        total_trans = profit_cnt + loss_cnt
+        profit_ratio = float(profit_cnt) / total_trans
+        line = "Num. of transactions: {:<10} Profit ratio: {:.1%}"
+        line = line.format(total_trans, profit_ratio)
+        print line
+
+    def _calculate_profit_loss_count(self, orders):
+        profit_cnt = 0
+        loss_cnt = 0
+        for order in orders:
+            # calculate profit
+            open_type = order.get_open_type_display()
+            self._verify_open_type(open_type)
+            open_price = order.open_price
+            close_price = order.close_price
+            if open_type == 'Long':
+                profit = close_price - open_price
+            elif open_type == 'Short':
+                profit = open_price - close_price
+            # increase count
+            if profit >= 0:
+                profit_cnt += 1
+            else:
+                loss_cnt += 1
+        return profit_cnt, loss_cnt
