@@ -446,9 +446,11 @@ class OrderGroup(object):
             print "cancel deletion"
 
     def show_order_summary(self):
+        # show strategy info
         print "Strategy: {:<40} Symbol: {}".format(
             self.strategy.name,
             self.strategy.symbol)
+        # show transactions info
         orders = Order.objects.filter(strategy=self.strategy,
                                       state='C')
         profit_cnt, loss_cnt = self._calculate_profit_loss_count(orders)
