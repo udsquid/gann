@@ -13,6 +13,7 @@ Usage:
     order close [(<date> <time>)] [--ticket=<id>]
     order delete <from>
     order status
+    order history [<from>] [<to>]
     order summary
 
 Options:
@@ -123,6 +124,7 @@ class OrderGroup(object):
                 ['order', 'close', '<date> <time>', '--ticket=<id>'],
                 ['order', 'delete', '<from>'],
                 ['order', 'status'],
+                ['order', 'history'],
                 ['order', 'summary'],
                 ]
 
@@ -188,6 +190,12 @@ class OrderGroup(object):
             self.delete_order(from_ticket, self.strategy)
         elif arg['status']:
             self.show_active_orders()
+        elif arg['history']:
+            ticket_from = arg['<from>']
+            ticket_to = arg['<to>']
+            self.show_orders_history(self.strategy,
+                                     ticket_from,
+                                     ticket_to)
         elif arg['summary']:
             self.show_order_summary()
         else:
@@ -444,6 +452,42 @@ class OrderGroup(object):
             print "{} order(s) has beed deleted".format(delete_num)
         else:
             print "cancel deletion"
+
+    def show_orders_history(self, strategy, ticket_from, ticket_to):
+        print "  Name:", strategy.name
+        print "Symbol:", strategy.symbol
+        print "Orders:"
+        orders = Order.objects.filter(strategy=strategy)
+        if ticket_from:
+            orders = orders.filter(pk__gte=ticket_from)
+        if ticket_to:
+            orders = orders.filter(pk__lte=ticket_to)
+        if not orders.exists():
+            print "--- None ---"
+            return
+        # show orders in table
+        orders = orders.order_by('pk')
+        print "-"*60
+        for order in orders:
+            indent = ' '*8
+            open_type = order.get_open_type_display()
+            open_time = None
+            close_time = None
+            if order.open_time:
+                open_time = self._format_to_local(order.open_time)
+            if order.close_time:
+                close_time = self._format_to_local(order.close_time)
+            print "#{:<6} Type: {}".format(order.pk, open_type)
+            print "{}Open time: {}".format(indent, open_time)
+            print "{}Open price: {}".format(indent, order.open_price)
+            print "{}Size: {}".format(indent, order.size)
+            print "{}Close time: {}".format(indent, close_time)
+            print "{}Close price: {}".format(indent, order.close_price)
+            print "-"*60
+
+    def _format_to_local(self, datetime_obj):
+        local = to_local(datetime_obj)
+        return local.strftime(TIME_FORMAT)
 
     def show_order_summary(self):
         # show strategy info
