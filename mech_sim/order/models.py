@@ -45,5 +45,8 @@ class Order(models.Model):
                                       null=True)
     state = models.CharField(max_length=1,
                              choices=STATE_CHOICES)
+    per_size_gross_profit = models.DecimalField(max_digits=12,
+                                                decimal_places=2,
+                                                null=True)
     gross_profit = models.DecimalField(max_digits=12, decimal_places=2,
                                        null=True)
