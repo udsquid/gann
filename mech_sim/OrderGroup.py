@@ -4,7 +4,7 @@ Sub-group commands for order operations.
 Usage:
     order strategy list
     order strategy info <name>
-    order strategy new <name> <symbol>
+    order strategy new <name> <symbol> <cost>
     order strategy load <name>
     order strategy rename <old-name> <new-name>
     order strategy delete <name>
@@ -148,7 +148,8 @@ class OrderGroup(object):
             elif arg['new']:
                 name = arg['<name>']
                 symbol = arg['<symbol>']
-                self.create_strategy_entry(name, symbol)
+                cost = arg['<cost>']
+                self.create_strategy_entry(name, symbol, cost)
             elif arg['load']:
                 name = arg['<name>']
                 self.load_strategy(name)
@@ -214,6 +215,7 @@ class OrderGroup(object):
         created_time = to_local(s.created_time)
         print '   Name:', s.name
         print ' Symbol:', s.symbol
+        print '   Cost:', s.cost
         print 'Created:', created_time.strftime(TIME_FORMAT)
 
     def _query_strategy(self, name):
@@ -223,12 +225,13 @@ class OrderGroup(object):
             err_msg = "*** strategy does not exist: {}".format(name)
             raise ValueError(err_msg)
 
-    def create_strategy_entry(self, name, symbol):
+    def create_strategy_entry(self, name, symbol, cost):
         self._verify_symbol(symbol)
         try:
             upper_sym = symbol.upper()
             self.strategy = Strategy.objects.create(name=name,
-                                                    symbol=upper_sym)
+                                                    symbol=upper_sym,
+                                                    cost=cost)
             self.product = upper_sym
         except IntegrityError as e:
             if 'UNIQUE constraint failed' not in str(e):
@@ -491,38 +494,53 @@ class OrderGroup(object):
 
     def show_order_summary(self):
         # show strategy info
-        print "Strategy: {:<40} Symbol: {}".format(
-            self.strategy.name,
-            self.strategy.symbol)
+        _sec1 = "Strategy: {}".format(self.strategy.name)
+        _sec2 = "Symbol: {}".format(self.strategy.symbol)
+        line = "{:<40}{:<20}".format(_sec1, _sec2)
+        print line
         # show transactions info
         orders = Order.objects.filter(strategy=self.strategy,
                                       state='C')
-        profit_cnt, loss_cnt = self._calculate_profit_loss_count(orders)
-        line = "No. of profits: {:<10} No. of losses: {:<10}"
-        line = line.format(profit_cnt, loss_cnt)
+        profit_cnt = orders.filter(gross_profit__gte=0).count()
+        loss_cnt = orders.filter(gross_profit__lt=0).count()
+        _sec1 = "No. of profits: {}".format(profit_cnt)
+        _sec2 = "No. of losses: {}".format(loss_cnt)
+        line = "{:<40}{:<40}".format(_sec1, _sec2)
         print line
         total_trans = profit_cnt + loss_cnt
         profit_ratio = float(profit_cnt) / total_trans
-        line = "No. of transactions: {:<10} Profit ratio: {:.1%}"
-        line = line.format(total_trans, profit_ratio)
+        _sec1 = "No. of transactions: {}".format(total_trans)
+        _sec2 = "Profit ratio: {:.1%}".format(profit_ratio)
+        line = "{:<40}{:<40}".format(_sec1, _sec2)
+        print line
+        profits = [o.gross_profit for o in orders]
+        max_profit_cnt = self._count_max_cont_profit(profits)
+        max_loss_cnt = self._count_max_cont_loss(profits)
+        _sec1 = "Max cont. profit: {}".format(max_profit_cnt)
+        _sec2 = "Max cont. loss: {}".format(max_loss_cnt)
+        line = "{:<40}{:<40}".format(_sec1, _sec2)
         print line
 
-    def _calculate_profit_loss_count(self, orders):
-        profit_cnt = 0
-        loss_cnt = 0
-        for order in orders:
-            # calculate profit
-            open_type = order.get_open_type_display()
-            self._verify_open_type(open_type)
-            open_price = order.open_price
-            close_price = order.close_price
-            if open_type == 'Long':
-                profit = close_price - open_price
-            elif open_type == 'Short':
-                profit = open_price - close_price
-            # increase count
+    def _count_max_cont_profit(self, profits):
+        max_cnt = 0
+        curr_cnt = 0
+        for profit in profits:
             if profit >= 0:
-                profit_cnt += 1
+                curr_cnt += 1
+                if curr_cnt > max_cnt:
+                    max_cnt = curr_cnt
             else:
-                loss_cnt += 1
-        return profit_cnt, loss_cnt
+                curr_cnt = 0
+        return max_cnt
+
+    def _count_max_cont_loss(self, profits):
+        max_cnt = 0
+        curr_cnt = 0
+        for profit in profits:
+            if profit >= 0:
+                curr_cnt = 0
+            else:
+                curr_cnt += 1
+                if curr_cnt > max_cnt:
+                    max_cnt = curr_cnt
+        return max_cnt

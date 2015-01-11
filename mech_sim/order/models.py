@@ -10,6 +10,7 @@ from django.db import models
 class Strategy(models.Model):
     name = models.CharField(max_length=256, unique=True)
     symbol = models.CharField(max_length=8)
+    cost = models.DecimalField(max_digits=6, decimal_places=2)
     created_time = models.DateTimeField(
         auto_now_add=True,
         verbose_name="Strategy created time")

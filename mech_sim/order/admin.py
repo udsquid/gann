@@ -39,7 +39,7 @@ format_close_time.short_description = "Close time"
 # order admins
 #
 class StrategyAdmin(admin.ModelAdmin):
-    list_display = ('name', 'symbol', format_created_time)
+    list_display = ('name', 'symbol', 'cost', format_created_time)
     date_hierarchy = 'created_time'
     ordering = ('created_time',)
 
