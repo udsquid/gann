@@ -428,7 +428,7 @@ class OrderGroup(object):
     def close_order(self, ticket, close_time, close_price):
         order = Order.objects.get(pk=ticket)
         if order.get_state_display() == 'Close':
-            raise Exception("*** order had been closed before")
+            raise Exception("*** order has already been closed")
         if order.open_time > close_time:
             raise Exception("*** close time is before open time")
         order.close_time = close_time
