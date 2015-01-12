@@ -26,6 +26,7 @@ Options:
 #
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
+from itertools import ifilter
 import random
 
 
@@ -433,6 +434,12 @@ class OrderGroup(object):
         order.close_time = close_time
         order.close_price = close_price
         order.state = 'C'
+        if order.get_open_type_display() == 'Long':
+            profit = order.close_price - order.open_price
+        if order.get_open_type_display() == 'Short':
+            profit = order.open_price - order.close_price
+        order.per_size_gross_profit = profit
+        order.gross_profit = profit * order.size
         order.save()
 
         local_time = to_local(close_time)
@@ -501,25 +508,50 @@ class OrderGroup(object):
         # show transactions info
         orders = Order.objects.filter(strategy=self.strategy,
                                       state='C')
-        profit_cnt = orders.filter(gross_profit__gte=0).count()
-        loss_cnt = orders.filter(gross_profit__lt=0).count()
+        net_profits = self._calculate_net_profits(orders)
+        profit_cnt = self._count_profits(net_profits)
+        loss_cnt = self._count_losses(net_profits)
         _sec1 = "No. of profits: {}".format(profit_cnt)
         _sec2 = "No. of losses: {}".format(loss_cnt)
         line = "{:<40}{:<40}".format(_sec1, _sec2)
         print line
-        total_trans = profit_cnt + loss_cnt
+        total_trans = orders.count()
         profit_ratio = float(profit_cnt) / total_trans
         _sec1 = "No. of transactions: {}".format(total_trans)
         _sec2 = "Profit ratio: {:.1%}".format(profit_ratio)
         line = "{:<40}{:<40}".format(_sec1, _sec2)
         print line
-        profits = [o.gross_profit for o in orders]
-        max_profit_cnt = self._count_max_cont_profit(profits)
-        max_loss_cnt = self._count_max_cont_loss(profits)
+        max_profit_cnt = self._count_max_cont_profit(net_profits)
+        max_loss_cnt = self._count_max_cont_loss(net_profits)
         _sec1 = "Max cont. profit: {}".format(max_profit_cnt)
         _sec2 = "Max cont. loss: {}".format(max_loss_cnt)
         line = "{:<40}{:<40}".format(_sec1, _sec2)
         print line
+
+    def _calculate_net_profits(self, orders):
+        profits = []
+        cost = self.strategy.cost
+        tick_value = self._get_tick_value()
+        for order in orders:
+            profit = order.gross_profit * tick_value
+            profit = profit - cost * order.size
+            profits.append(profit)
+        return profits
+
+    def _get_tick_value(self):
+        symbol = self.strategy.symbol
+        product = ProductInfo.objects.get(symbol=symbol)
+        return product.tick_value
+
+    def _count_profits(self, net_profits):
+        profit_cond = lambda p: p >= 0
+        profits = ifilter(profit_cond, net_profits)
+        return len(list(profits))
+
+    def _count_losses(self, net_profits):
+        loss_cond = lambda p: p < 0
+        losses = ifilter(loss_cond, net_profits)
+        return len(list(losses))
 
     def _count_max_cont_profit(self, profits):
         max_cnt = 0
