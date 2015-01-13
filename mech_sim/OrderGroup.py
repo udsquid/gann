@@ -511,21 +511,25 @@ class OrderGroup(object):
         net_profits = self._calculate_net_profits(orders)
         profit_cnt = self._count_profits(net_profits)
         loss_cnt = self._count_losses(net_profits)
-        _sec1 = "No. of profits: {}".format(profit_cnt)
-        _sec2 = "No. of losses: {}".format(loss_cnt)
+        _sec1 = "No. of profits: {:,}".format(profit_cnt)
+        _sec2 = "No. of losses: {:,}".format(loss_cnt)
         line = "{:<40}{:<40}".format(_sec1, _sec2)
         print line
         total_trans = orders.count()
         profit_ratio = float(profit_cnt) / total_trans
-        _sec1 = "No. of transactions: {}".format(total_trans)
+        _sec1 = "No. of transactions: {:,}".format(total_trans)
         _sec2 = "Profit ratio: {:.1%}".format(profit_ratio)
         line = "{:<40}{:<40}".format(_sec1, _sec2)
         print line
         max_profit_cnt = self._count_max_cont_profit(net_profits)
         max_loss_cnt = self._count_max_cont_loss(net_profits)
-        _sec1 = "Max cont. profit: {}".format(max_profit_cnt)
-        _sec2 = "Max cont. loss: {}".format(max_loss_cnt)
+        _sec1 = "Max cont. profit: {:,}".format(max_profit_cnt)
+        _sec2 = "Max cont. loss: {:,}".format(max_loss_cnt)
         line = "{:<40}{:<40}".format(_sec1, _sec2)
+        print line
+        profit_sum = sum(net_profits)
+        _sec1 = "Sum of profit: {:,}".format(profit_sum)
+        line = "{:<40}".format(_sec1)
         print line
 
     def _calculate_net_profits(self, orders):
