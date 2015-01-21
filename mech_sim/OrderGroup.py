@@ -528,9 +528,28 @@ class OrderGroup(object):
         line = "{:<40}{:<40}".format(_sec1, _sec2)
         print line
         profit_sum = sum(net_profits)
+        max_loss = self._calculate_max_loss(net_profits)
         _sec1 = "Sum of profit: {:,}".format(profit_sum)
-        line = "{:<40}".format(_sec1)
+        _sec2 = "Max loss: {:,}".format(max_loss)
+        line = "{:<40}{:<40}".format(_sec1, _sec2)
         print line
+        print 'Transactions:'
+        if not orders.exists():
+            print '--- None ---'
+            return
+        print '{} | {:>5} | {:>7} | {:>7} | {:>11} | {:>11}'.format(
+            'Ticket', 'Type', 'Open', 'Close', 'Profit', 'Net profit')
+        print '-' * 62
+        profit_history = 0
+        for i, order in enumerate(orders):
+            profit_history += net_profits[i]
+            print '{:>6} | {:>5} | {:>7} | {:>7} | {:>11,} | {:>11,}'.format(
+                order.pk,
+                order.get_open_type_display(),
+                order.open_price,
+                order.close_price,
+                net_profits[i],
+                profit_history)
 
     def _calculate_net_profits(self, orders):
         profits = []
@@ -580,3 +599,25 @@ class OrderGroup(object):
                 if curr_cnt > max_cnt:
                     max_cnt = curr_cnt
         return max_cnt
+
+    def _calculate_max_loss(self, profits):
+        net_profit = 0
+        base_line = loss_ever = 0
+        max_loss = 0
+        loss_list = [0]
+        for profit in profits:
+            net_profit += profit
+            if net_profit > base_line:
+                if max_loss != 0:
+                    loss_list.append(max_loss)
+                    max_loss = 0
+                base_line = net_profit
+                loss_ever = net_profit
+            elif net_profit < loss_ever:
+                loss_ever = net_profit
+                max_loss = loss_ever - base_line
+        # don't forget the last max loss (if any)
+        if max_loss != 0:
+            loss_list.append(max_loss)
+
+        return min(loss_list)
