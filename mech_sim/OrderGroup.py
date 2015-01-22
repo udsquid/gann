@@ -516,7 +516,10 @@ class OrderGroup(object):
         line = "{:<40}{:<40}".format(_sec1, _sec2)
         print line
         total_trans = orders.count()
-        profit_ratio = float(profit_cnt) / total_trans
+        if total_trans == 0:
+            profit_ratio = 0
+        else:
+            profit_ratio = float(profit_cnt) / total_trans
         _sec1 = "No. of transactions: {:,}".format(total_trans)
         _sec2 = "Profit ratio: {:.1%}".format(profit_ratio)
         line = "{:<40}{:<40}".format(_sec1, _sec2)
