@@ -230,9 +230,10 @@ class OrderGroup(object):
         self._verify_symbol(symbol)
         try:
             upper_sym = symbol.upper()
+            cost_value = int(cost)
             self.strategy = Strategy.objects.create(name=name,
                                                     symbol=upper_sym,
-                                                    cost=cost)
+                                                    cost=cost_value)
             self.product = upper_sym
         except IntegrityError as e:
             if 'UNIQUE constraint failed' not in str(e):
