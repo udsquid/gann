@@ -253,11 +253,14 @@ class OrderGroup(object):
             self.strategy = s
 
     def delete_strategy(self, name):
-        s = self._query_strategy(name)
-        s.delete()
-        if self.strategy.name == name:
+        # clear properties
+        if self._strategy and self.strategy.name == name:
             self.strategy = None
             self.product = None
+        # remove strategy and its orders
+        s = self._query_strategy(name)
+        Order.objects.filter(strategy=s).delete()
+        s.delete()
 
     def _verify_open_type(self, open_type):
         if open_type.lower() not in ['long', 'short']:
