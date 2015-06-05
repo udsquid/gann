@@ -544,17 +544,19 @@ class OrderGroup(object):
         if not orders.exists():
             print '--- None ---'
             return
-        print '{} | {:>5} | {:>7} | {:>7} | {:>11} | {:>11}'.format(
-            'Ticket', 'Type', 'Open', 'Close', 'Profit', 'Net profit')
-        print '-' * 62
+        print '{} | {:>5} | {:>7} | {:>7} | {:>4} | {:>5} | {:>11} | {:>11}'.format(
+            'Ticket', 'Type', 'Open', 'Close', 'Size', 'Diff', 'Profit', 'Net profit')
+        print '-' * 77
         profit_history = 0
         for i, order in enumerate(orders):
             profit_history += net_profits[i]
-            print '{:>6} | {:>5} | {:>7} | {:>7} | {:>11,} | {:>11,}'.format(
+            print '{:>6} | {:>5} | {:>7} | {:>7} | {:>4} | {:>5} | {:>11,} | {:>11,}'.format(
                 order.pk,
                 order.get_open_type_display(),
                 order.open_price,
                 order.close_price,
+                order.size,
+                order.per_size_gross_profit,
                 net_profits[i],
                 profit_history)
 
