@@ -450,7 +450,9 @@ class OrderGroup(object):
         local_time = local_time.strftime(TIME_FORMAT)
         print "Closed order #{} at [{}], price is {}".format(
             ticket, local_time, close_price)
-        print "Profit is {}".format(order.gross_profit)
+        print "Diff is {}, total diff is {}".format(
+            order.per_size_gross_profit,
+            order.gross_profit)
 
     def delete_order(self, ticket, strategy):
         orders = Order.objects.filter(pk__gte=ticket,
