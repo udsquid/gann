@@ -115,7 +115,7 @@ class OrderGroup(object):
     def command_forms(self):
         return [['order', 'strategy', 'list'],
                 ['order', 'strategy', 'info', '<name>'],
-                ['order', 'strategy', 'new', '<name>', '<symbol>'],
+                ['order', 'strategy', 'new', '<name>', '<symbol>', '<cost>'],
                 ['order', 'strategy', 'load', '<name>'],
                 ['order', 'strategy', 'rename', '<old-name>', '<new-name>'],
                 ['order', 'strategy', 'delete', '<name>'],
