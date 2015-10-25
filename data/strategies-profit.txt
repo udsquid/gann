@@ -1,0 +1,41 @@
+從 2001-1-30 ～ 2001-2-21：
+    golden-top-004:
+    In : 547600-723800
+    Out: -176200
+
+    golden-top-005:
+    In : 626800-797200
+    Out: -170400
+
+    golden-top-005-enhance-01:
+    In : -181200-0
+    Out: -181200
+
+    golden-top-005-enhance-02:
+    In : -164800-0
+    Out: -164800
+
+    (v) golden-top-005-enhance-03:
+    In : -142600-0
+    Out: -142600
+
+    golden-top-005-enhance-04:
+    In : -149600-0
+    Out: -149600
+
+從 2001-4-12 ～ 2001-6-29：
+    golden-top-004:
+    In : 511600-691800
+    Out: -180200
+
+    golden-top-005-enhance-02:
+    In : 4000-(-9000)
+    Out: 13000
+
+    (v) golden-top-005-enhance-03:
+    In : 13800-20600
+    Out: -6800
+
+    golden-top-005-enhance-04:
+    In : -73800-19600
+    Out: -93400
