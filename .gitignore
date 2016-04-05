@@ -2,3 +2,4 @@
 example_*.py
 .DS_Store
 southtut*/
+*.egg-info
