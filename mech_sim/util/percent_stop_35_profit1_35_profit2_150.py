@@ -25,9 +25,10 @@ def long_cmd(open_price, high_price=None, debug=False):
         lower = open_price - stop_loss
         instruction = 'index searchf < {0} or >= {1}'.format(lower, upper)
 
-    if not debug:
+    if debug:
+        return instruction
+    else:
         print instruction
-    return instruction
 
 
 def short_cmd(open_price, low_price=None, debug=False):
@@ -50,9 +51,10 @@ def short_cmd(open_price, low_price=None, debug=False):
         lower = open_price - profit_level_1
         instruction = 'index searchf >= {0} or < {1}'.format(upper, lower)
 
-    if not debug:
+    if debug:
+        return instruction
+    else:
         print instruction
-    return instruction
 
 
 def test_long():
