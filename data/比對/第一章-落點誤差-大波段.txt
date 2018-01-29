@@ -1,0 +1,15 @@
+# 記錄波段落點與角度線的誤差情形
+
+# point type    angle   diff
+12682   high    B3      -2
+2485    low     C2      +1
+6365    high    C1      -2
+3098    low     A2      -2
+7228    high    B8      0
+4474    low     B1      0
+10256   high    A3      0
+5422    low     C1      -1
+10393   high    C3      -2
+3411    low     A4      +2
+9859    high    B2      0
+3955    low     B4      +1
