@@ -1,0 +1,56 @@
+# 比對波段落點的位置是否與後勢有關聯性
+
+# 結果：
+#       total            40
+#       -3 < diff <  0   15     (37.5%)
+#       -3 < diff <= 0   24     (60%)
+#       -3 < diff <= 1   28     (70%)
+# 分析：
+#   1. diff < 0
+#      只有 37% 是「擋在前面」
+#   2. diff <= 0
+#      有 60 % 都是在「擋在前面」或「在線上」
+#   3. diff <= 1
+#      有 70% 的落點都止在角度線（誤差一格）
+
+# point type    angle   diff
+12682   high    B3      -2
+2485    low     C2      +1
+6365    high    C1      -2
+4032    low     A3      -2
+5459    high    B2      -2
+3098    low     A2      -2
+5091    high    A4      +2
+3740    low     B2      +2
+6719    high    B4      0
+5125    low     B7      0
+7228    high    B8      0
+4474    low     B1      0
+10256   high    A3      0
+7040    low     A4      -1
+9378    high    B7      -1
+6219    low     B8      -2
+7488    high    B2      -2
+5422    low     C1      -1
+8710    high    A2      0
+6771    low     A3      0
+10393   high    C3      -2
+8250    low     C4      +2
+10328   high    B5      -1
+4555    low     B2      +2
+6198    high    B8      0
+3411    low     A4      +2
+6484    high    A2      -3
+3845    low     B3      +2
+5141    high    B7      +1
+4044    low     B5      +2
+7135    high    C4      -3
+5255    low     B8      -1
+7476    high    B2      -3
+6232    low     A1      +2
+9807    high    C1      +3
+7987    low     C3      +1
+9859    high    B2      0
+7384    low     B1      -2
+9309    high    A4      -1
+3955    low     B4      +1
