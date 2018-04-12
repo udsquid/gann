@@ -1,0 +1,62 @@
+# legend:
+#   cut: 切線對應
+#   big: 大數對應
+#   aid: 同為輔線
+
+# Summary:
+#   - Number
+#         aid: 1
+#         big: 10
+#         cut: 21
+#        none: 7
+#       total: 39
+#
+#   - Percent:
+#         big: 25.64%
+#         cut: 53.85%
+#     big+cut: 79.49%
+#
+#   - Offset (average):
+#     big: 5.3
+#     cut: 4.2
+
+# start  end    type    offset  note
+12682    2485   cut     0
+2485     6365   cut     2
+6365     4032   none
+4032     5459   big     4
+5459     3098   cut     0
+3098     5091   cut     4
+5091     3740   cut     5
+3740     6719   cut     7
+6719     5125   big     1
+5125     7228   aid
+7228     4474   cut     3
+4474     10256  cut     6
+10256    7040   cut     1
+7040     9378   cut     1
+9378     6219   none
+6219     7488   none
+7488     5422   cut     2
+5422     8710   big     3
+8710     6771   cut     0
+6771     10393  cut     8
+10393    8250   cut     2
+8250     10328  cut     9
+10328    4555   big     6
+4555     6198   big     5
+6198     3411   none
+3411     6484   cut     5
+6484     3845   cut     3
+3845     5141   none
+5141     4044   big     9
+4044     7135   big     7
+7135     5255   cut     8
+5255     7476   cut     8
+7476     6232   none
+6232     9807   cut     9
+9807     7987   big     2
+7987     9859   big     7
+9859     7384   none
+7384     9309   big     9
+9309     3955   cut     6

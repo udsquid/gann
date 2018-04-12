@@ -1,0 +1,39 @@
+# 記錄生日比對的列表
+
+# name           date            point   diff
+me               1979/08/08      3       +1
+wife             1981/09/13      1       -4
+son              2012/07/05      2       +3
+father           1952/02/12      2       -6
+mother           1951/01/17      4       +2
+brother          1982/01/14      5       -2
+sister           1988/02/22      4       -2
+ju-zhen          1967/08/14      1       +1
+lin-xin-yao      1980/08/06      3       -2
+huang-li-ling    1990/04/04      2       +2
+roger deng       1972/09/11      2       +9
+zhong-ya-ling    1979/09/12      1       -7
+zhuang-zong-ru   1978/09/13      1       -7
+jian-wei-wei     1978/09/15      1       -5
+huang-yan-kai    1996/09/17      3       +5
+zhan-shu-ming    1988/09/19      1       +9
+ray yang         1980/10/02      3       -8
+peng-ming-hong   1975/10/06      2       +1
+boris yen        1978/10/19      2       +3
+steve jobs       1955/02/24      4       -1
+ulysses          1978/08/25      3       -1
+hank lin         1973/10/03      2       0
+xu-cheng-xiang   1980/01/17      4       -1
+a-xiong          1981/01/05      5       0
+zhan-jian-liang  1958/07/08      3       -2
+he-ying-xin      1979/05/23      2       -4
+fari             1980/07/06      1       -12
+zhou-ke-liang    1978/09/03      1       -17
+duck             1975/03/05      3       -6
+zeng-hui-ling    1979/06/28      3       +1
+zhang-yi-zheng   1979/12/08      2       -11
+koji             1981/06/18      3       -1
+magicjak         1971/10/20      2       +7
+li-xi-lin        1983/01/31      4       +4
+hong-zong-min    1979/10/30      2       +13
+zheng-zh-jie     1979/11/15      2       -12
