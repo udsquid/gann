@@ -1,0 +1,61 @@
+# legend:
+#   cut: 切線對應
+#   big: 大數對應
+#   aid: 同為輔線
+
+# Summary:
+#   - Number
+#         aid: 2
+#         big: 5
+#         cut: 21
+#        none: 10
+#       total: 38
+#
+#   - Percent:
+#         big: 13.16%
+#         cut: 55.26%
+#     big+cut: 68.42%
+#
+#   - Offset (average):
+#     big: 2.4
+#     cut: 3.5
+
+# previous  current     type    offset  note
+12682       6365        none            在基礎角度分割的分割點附近
+2485        4032        big     0
+6365        5459        cut     5
+4032        3098        cut     2
+5459        5091        cut     6
+3098        3740        cut     3
+5091        6719        big     2
+3740        5125        cut     2
+6719        7228        aid     0
+5125        4474        aid
+7228        10256       cut     7
+4474        7040        none
+10256       9378        cut     6
+7040        6219        cut     4
+9378        7488        cut     3
+6219        5422        cut     9
+7488        8710        big     1
+5422        6771        none
+8710        10393       none
+6771        8250        none
+10393       10328       none
+8250        4555        cut     4
+10328       6198        cut     1
+4555        3411        none
+6198        6484        none
+3411        3845        cut     1
+6484        5141        cut     4
+3845        4044        big     3
+5141        7135        cut     1
+4044        5255        cut     1
+7135        7476        cut     0
+5255        6232        cut     2
+7476        9807        cut     1
+6232        7987        none
+9807        9859        none
+7987        7384        big     6
+9859        9309        cut     9
+7384        3955        cut     3
