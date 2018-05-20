@@ -3,6 +3,23 @@
 #   big: 大數對應
 #   aid: 同為輔線
 
+# Summary:
+#   - Number
+#         aid: 
+#         big: 
+#         cut: 
+#        none: 
+#       total: 
+#
+#   - Percent:
+#         big: 12.39%
+#         cut: 73.45%
+#     big+cut: 85.84%
+#
+#   - Offset (average):
+#     big: 2.42
+#     cut: 3.01
+
 # start  end    type    offset  note
 12682    2485   cut     0
 2485     6365   cut     2
@@ -14,4 +31,4 @@
 5422     10393  big     1
 10393    3411   cut     2
 3411     9859   none
-9859     3955   none
+9859     3955   aid     1
