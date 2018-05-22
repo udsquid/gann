@@ -2,6 +2,8 @@
 #   cut: 切線對應
 #   big: 大數對應
 #   aid: 同為輔線
+#
+#   strict: 誤差 <= 5
 
 # Summary:
 #   - Number
@@ -19,6 +21,20 @@
 #   - Offset (average):
 #     big: 2.4
 #     cut: 3.5
+
+# Summary (strict):
+#   - Number
+#         big: 4
+#         cut: 16
+#
+#   - Percent:
+#         big: 10.53%
+#         cut: 42.11%
+#     big+cut: 52.63%
+#
+#   - Offset (average):
+#     big: 1.5
+#     cut: 2.3
 
 # previous  current     type    offset  note
 12682       6365        none            在基礎角度分割的分割點附近

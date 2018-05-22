@@ -2,6 +2,8 @@
 #   cut: 切線對應
 #   big: 大數對應
 #   aid: 同為輔線
+#
+#   strict: 誤差 <= 5
 
 # Summary:
 #   - Number
@@ -19,6 +21,20 @@
 #   - Offset (average):
 #     big: 5.3
 #     cut: 4.2
+
+# Summary (strict):
+#   - Number
+#         big: 5
+#         cut: 13
+#
+#   - Percent:
+#         big: 12.82%
+#         cut: 33.33%
+#     big+cut: 46.15%
+#
+#   - Offset (average):
+#     big: 3.0
+#     cut: 2.2
 
 # start  end    type    offset  note
 12682    2485   cut     0
